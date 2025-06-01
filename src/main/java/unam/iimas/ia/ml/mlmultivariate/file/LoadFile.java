@@ -12,11 +12,18 @@ public class LoadFile {
     private static final String PATH_DEFAULT = "src/main/resources/";
     private static final String FILE_DEFAULT = "data";
     private static final String EXTENTION_DEFAULT = ".txt";
+    private static final String PREFIX_VARIABLE_NAME = "X";
+    private static final int VARIABLE_NUMBER_DIGITS = 2;
+    private static final char CHAR_LEFT_PADDING = '0';
     private List<BigDecimal[]> vectores;
     private File file;
     private BufferedReader br;
     private BigDecimal[] lowerLimitScale;
     private BigDecimal[] upperLimitScale;
+    private String[] variableNames;
+
+    private static boolean fileHasHeaders = false;
+    private static boolean variableNamesFullfilled = false;
 
     public LoadFile() {
         this(FILE_DEFAULT);
@@ -31,7 +38,16 @@ public class LoadFile {
             String linea;
             while ((linea = br.readLine()) != null) {
                 variables= linea.split("\\s+");
-                vectores.add(getVector(variables));
+                if(fileHasHeaders && !variableNamesFullfilled){
+                    variableNames = variables;
+                    variableNamesFullfilled = !variableNamesFullfilled;
+                }else {
+                    if(!variableNamesFullfilled){
+                        variableNames = getVariablesNames(variables.length);
+                        variableNamesFullfilled = !variableNamesFullfilled;
+                    }
+                    vectores.add(getVector(variables));
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException("Exception LoadFile");
@@ -73,6 +89,16 @@ public class LoadFile {
         return vectorString;
     }
 
+    private String[] getVariablesNames(int numVariables){
+        String[] varaibleNames= new String[numVariables];
+        for (int i = 0;i<numVariables; i++){
+            varaibleNames[i] = PREFIX_VARIABLE_NAME +
+                    String.format("%" + VARIABLE_NUMBER_DIGITS + "s", ""+(i+1)).
+                            replace(' ', CHAR_LEFT_PADDING);
+        }
+        return varaibleNames;
+    }
+
     public List<BigDecimal[]> getVectores() {
         return this.vectores;
     }
@@ -83,6 +109,10 @@ public class LoadFile {
 
     public BigDecimal[] getUpperLimitScale() {
         return upperLimitScale;
+    }
+
+    public String[] getVariableNames() {
+        return variableNames;
     }
 }
 

@@ -55,4 +55,6 @@ public class Matrix {
         System.out.printf("y = %.6f%n", solution[2]);
         System.out.printf("z = %.6f%n", solution[3]);
     }
+
+
 }
