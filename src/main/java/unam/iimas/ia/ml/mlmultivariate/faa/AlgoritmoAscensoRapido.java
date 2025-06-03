@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class AlgoritmoAscensoRapido {
 
-    private static final int PRECISION = 10;
+    private static final int PRECISION = 20;
 
     private static boolean injectNoise = true;
     private LoadFile file;
@@ -65,7 +65,6 @@ public class AlgoritmoAscensoRapido {
                 vector[i] = vectorOriginal[i].add(getNoise());
                 vector[i] = ((x.subtract(a))).
                         divide((b.subtract(a)), PRECISION, RoundingMode.HALF_UP);
-                    vector[i] = vector[i].add(getNoise());
             }
             stabilizedVectors.add(vector);
         }
@@ -88,7 +87,8 @@ public class AlgoritmoAscensoRapido {
 
     private static BigDecimal getNoise(){
         Random random = new Random();
-        return BigDecimal.valueOf(random.nextDouble()).
+        int mult = (random.nextBoolean())?1:-1;
+        return BigDecimal.valueOf(random.nextDouble()*mult).
                 multiply(new BigDecimal("1e-"+(PRECISION-1)));
     }
 
