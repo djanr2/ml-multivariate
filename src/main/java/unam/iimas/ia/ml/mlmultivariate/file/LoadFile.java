@@ -15,6 +15,7 @@ public class LoadFile {
     private static final String PREFIX_VARIABLE_NAME = "X";
     private static final int VARIABLE_NUMBER_DIGITS = 2;
     private static final char CHAR_LEFT_PADDING = '0';
+    private int numeroVariables;
     private List<BigDecimal[]> vectores;
     private File file;
     private BufferedReader br;
@@ -52,6 +53,7 @@ public class LoadFile {
         } catch (IOException e) {
             throw new RuntimeException("Exception LoadFile");
         }
+        numeroVariables = vectores.get(0).length-1;
     }
 
     private BigDecimal[] getVector(String[] valoresFromDataVector){
@@ -113,6 +115,10 @@ public class LoadFile {
 
     public String[] getVariableNames() {
         return variableNames;
+    }
+
+    public int getNumeroVariables() {
+        return numeroVariables;
     }
 }
 

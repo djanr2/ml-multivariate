@@ -85,9 +85,24 @@ public class Termino {
         return potencias;
     }
 
+    public BigDecimal evaluate(BigDecimal[] variables){
+        BigDecimal val= new BigDecimal(1);
+        if (this.potencia== 0){return val;}
+        for (int i = 0; i < this.getPotencias().length; i++) {
+            if (this.getPotencias()[i]!=0){
+                val = val.multiply(variables[i].pow(this.getPotencias()[i]));
+            }
+        }
+        return val;
+    }
+
+    /*
     public static void main(String[] args) {
         Termino t = Termino.getRandomTermino(40,6);
         System.out.println(t);
     }
+     */
+
+
 
 }
