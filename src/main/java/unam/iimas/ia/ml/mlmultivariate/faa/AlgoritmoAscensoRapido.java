@@ -1,7 +1,10 @@
 package unam.iimas.ia.ml.mlmultivariate.faa;
 
 import unam.iimas.ia.ml.mlmultivariate.file.LoadFile;
+import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
+import unam.iimas.ia.ml.mlmultivariate.matrix.MatrixObject;
 import unam.iimas.ia.ml.mlmultivariate.model.Modelo;
+import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 
 import java.math.BigDecimal;
@@ -15,7 +18,6 @@ public class AlgoritmoAscensoRapido {
 
     private static final int PRECISION = 20;
 
-    private static boolean injectNoise = true;
     private LoadFile file;
 
     public static void main(String[] args) {
@@ -24,26 +26,32 @@ public class AlgoritmoAscensoRapido {
     }
 
     public void run(AlgoritmoAscensoRapido aaf){
-        Modelo m = Modelo.getRandomModelo(15,9,aaf.getDataFromFile().getNumeroVariables());
-        System.out.print("modelo("+ m.getL()+"):");
-        System.out.println(m);
+        Modelo m = Modelo.getCustomModel();
+        //prepare data;
+        List<Vector> vectores= mapToVectors(m,stabilizeVectorsZeroToOne(mapToPolynomial(
+                getDataFromFile().getVectores()
+                , m),m.getLowerLimitScale(), m.getUpperLimitScale()));
 
-        for (BigDecimal[] vector:
-                mapToPolynomial(
-                    getDataFromFile().getVectores()
-                , m)){
-            System.out.println(showVectorValues(vector));
+        System.out.println(m);
+        
+        List<Vector> vectoresToEvaluate = getRandomVectorsToEvaluate(vectores);
+
+        for (Vector v:
+             vectores) {
+            System.out.println(v);
         }
         System.out.println();
-        System.out.println(showVectorValues(m.getUpperLimitScale()));
-        System.out.println(showVectorValues(m.getLowerLimitScale()));
-        System.out.println();
-        for (BigDecimal[] vector:
-                stabilizeVectorsZeroToOne(mapToPolynomial(
-                        getDataFromFile().getVectores()
-                        , m),m.getLowerLimitScale(), m.getUpperLimitScale())){
-            System.out.println(showVectorValues(vector));
+
+        for (Vector v:
+                vectoresToEvaluate) {
+            System.out.println(v);
         }
+
+        System.out.println("------------------------------------------------------");
+
+        BigDecimal[] solution= Matrix.getGaussiaSolution(new MatrixObject(vectoresToEvaluate));
+
+        System.out.println(Arrays.toString(solution));
 
 
     }
@@ -109,5 +117,25 @@ public class AlgoritmoAscensoRapido {
         return Arrays.toString(Arrays.stream(vector)
                 .map(BigDecimal::toString)
                 .toArray(String[]::new));
+    }
+    
+    public static List<Vector> mapToVectors(Modelo modelo, List<BigDecimal[]> vectores){
+        List<Vector> vectores_ = new ArrayList<>();
+        for (int i = 0; i < vectores.size(); i++) {
+            vectores_.add(new Vector(i, modelo, vectores.get(i)));
+        }
+        return vectores_;
+    }
+
+    public List<Vector> getRandomVectorsToEvaluate(List<Vector> vectores){
+        List<Vector> vectoresRandom =new ArrayList<>();
+        Random random = new Random();
+        int index=0;
+        while (vectoresRandom.size()!=vectores.get(0).getVector().length-1){
+            index = random.nextInt(0,vectores.size());
+            vectoresRandom.add(vectores.get(index));
+            vectores.remove(index);
+        }
+        return vectoresRandom;
     }
 }

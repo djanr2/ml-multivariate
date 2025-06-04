@@ -1,5 +1,7 @@
 package unam.iimas.ia.ml.mlmultivariate.matrix;
 
+import unam.iimas.ia.ml.mlmultivariate.model.Vector;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -33,6 +35,10 @@ public class Matrix {
         }
 
         return x;
+    }
+
+    public static BigDecimal[] getGaussiaSolution(MatrixObject matrix){
+        return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
     }
 
 

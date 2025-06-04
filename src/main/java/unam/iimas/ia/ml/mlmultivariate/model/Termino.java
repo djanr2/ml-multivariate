@@ -9,15 +9,28 @@ public class Termino {
     private static final int MINIMO_TERMINO = 4; //
 
     private Long id;
-    private int[] potencias;
+    private final int[] potencias;
     private BigDecimal coeficiente;
-    private int potencia;
+    private final int potencia;
 
-    public Termino(BigDecimal coeficiente, int potencia, int numeroVariables){
+    private Termino(BigDecimal coeficiente, int potencia, int numeroVariables){
         this.coeficiente = coeficiente;
         this.potencias = new int[numeroVariables];
         this.potencia = potencia;
     }
+
+    public Termino(BigDecimal coeficiente, int[] potencicas){
+        this.coeficiente = coeficiente;
+        this.potencias = potencicas;
+        this.potencia = Arrays.stream(potencicas).sum();
+    }
+    public Termino(int[] potencicas){
+        this.coeficiente = new BigDecimal(1);
+        this.potencias = potencicas;
+        this.potencia = Arrays.stream(potencicas).sum();
+    }
+
+
 
 
 
@@ -53,7 +66,7 @@ public class Termino {
     }
     @Override
     public String toString(){
-        return Arrays.toString(this.potencias);
+        return coeficiente+"("+Arrays.toString(this.potencias)+")";
     }
 
     public int getPotencia() {
@@ -77,10 +90,6 @@ public class Termino {
         this.coeficiente = coeficiente;
     }
 
-    public void setPotencia(int potencia) {
-        this.potencia = potencia;
-    }
-
     public int[] getPotencias() {
         return potencias;
     }
@@ -94,6 +103,19 @@ public class Termino {
             }
         }
         return val;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Termino other = (Termino) obj;
+        return Arrays.equals(this.potencias, other.potencias);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(potencias);
     }
 
     /*

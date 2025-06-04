@@ -1,7 +1,9 @@
 package unam.iimas.ia.ml.mlmultivariate.model;
 
 import java.math.BigDecimal;
+import java.sql.SQLOutput;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 public class Modelo {
@@ -10,33 +12,36 @@ public class Modelo {
     private Termino[] terminos;
     private BigDecimal[] lowerLimitScale;
     private BigDecimal[] upperLimitScale;
-    private int l;
+    private final int l;
 
 
-    public Modelo(int l, Termino[] terminos){
-        this.l = l;
+    public Modelo(Termino[] terminos){
+        this.l =  Arrays.stream(terminos).mapToInt(Termino::getPotencia).sum();
         this.terminos = terminos;
     }
 
 
     public static Modelo getRandomModelo(int potenciaL, int numeroMaximoTerminos, int numeroVariables){
+        System.out.println(numeroMaximoTerminos);
         int potenciaAux = potenciaL;
-        ArrayList<Termino> term = new ArrayList<>();
-        term.add(Termino.getZeroTerm(numeroVariables));
+        HashSet<Termino> term = new HashSet<>();
         Random rand = new Random();
-        for (int i = 0; i < numeroMaximoTerminos; i++) {
-            int potencia = rand.nextInt(0,potenciaAux+1);
-            if(i==numeroMaximoTerminos-1){
-                potencia=potenciaAux;
+        do{
+            int potencia = rand.nextInt(1,potenciaAux+1);
+            if(numeroMaximoTerminos==1){
+                potencia = potenciaAux;
             }
-            if (potencia != 0){
-                Termino termino = Termino.getRandomTermino(potencia,numeroVariables);
-                term.add(termino);
+            Termino t = Termino.getRandomTermino(potencia,numeroVariables);
+            if(term.add(t)){
+                potenciaAux-=potencia;
+                numeroMaximoTerminos--;
             }
-            potenciaAux-=potencia;
-        }
-        Modelo m = new Modelo(potenciaL, term.toArray(new Termino[term.size()]));
-        return m;
+
+        } while ( potenciaAux > 0 );
+
+        return new Modelo(Stream.concat(
+                Stream.of(Termino.getZeroTerm(numeroVariables)),
+                Stream.of(term.toArray(new Termino[term.size()]))).toArray(Termino[]::new));
     }
 
 
@@ -99,5 +104,17 @@ public class Modelo {
     }
 
  */
+    public static Modelo getCustomModel(){
+        Termino[] terminos = {new Termino(new int[]{0, 0, 0, 0, 0})
+                            ,new Termino(new int[]{7, 0, 0, 0, 3})
+                            ,new Termino(new int[]{14, 0, 8, 1, 7})
+                            ,new Termino(new int[]{2, 0, 0, 4, 0})
+                            ,new Termino(new int[]{1, 7, 2, 3, 1})
+                            ,new Termino(new int[]{0, 0, 0, 0, 1})
+                            ,new Termino(new int[]{0, 0, 1, 0, 0})
+                            ,new Termino(new int[]{0, 0, 0, 1, 0})};
+
+        return new Modelo(terminos);
+    }
 
 }
