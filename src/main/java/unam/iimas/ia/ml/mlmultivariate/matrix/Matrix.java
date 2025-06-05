@@ -1,13 +1,12 @@
 package unam.iimas.ia.ml.mlmultivariate.matrix;
 
-import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class Matrix {
 
-    private static final int PRECISION = 20;
+    private static final int PRECISION = 6;
 
     public static BigDecimal[] gaussianElimination(BigDecimal[][] A, BigDecimal[] b) {
         int n = b.length;
@@ -40,6 +39,8 @@ public class Matrix {
     public static BigDecimal[] getGaussiaSolution(MatrixObject matrix){
         return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
     }
+
+
 
 
     public static void main(String[] args) {

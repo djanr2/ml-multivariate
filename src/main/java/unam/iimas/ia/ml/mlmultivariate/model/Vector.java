@@ -3,7 +3,7 @@ package unam.iimas.ia.ml.mlmultivariate.model;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-public class Vector {
+public class Vector implements Comparable<Vector>{
     private Long id;
     private final int index;
     private Modelo modelo;
@@ -15,6 +15,15 @@ public class Vector {
         this.index = index;
         this.modelo = modelo;
         this.vector = vector;
+    }
+
+    public Vector evaluate(){
+        value = new BigDecimal(0);
+        for (int i = 0; i < modelo.getTerminos().length; i++) {
+            value = value.add(vector[i].multiply(modelo.getTerminos()[i].getCoeficiente()));
+        }
+        error =  (value.subtract(vector[vector.length-1])).abs();
+        return this;
     }
 
     public Modelo getModelo() {
@@ -63,7 +72,13 @@ public class Vector {
 
     @Override
     public String toString(){
-        return this.index+" "+Arrays.toString(this.vector);
+        //return this.index+" "+error;
+        return this.index+" "+Arrays.toString(this.vector)+ " = " + error;
+    }
+
+    @Override
+    public int compareTo(Vector o) {
+        return (o.error.compareTo(this.error) == 1)? 1: -1;
     }
 
 }

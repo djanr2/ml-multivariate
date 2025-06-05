@@ -88,6 +88,23 @@ public class Modelo {
         return polynomialVector;
     }
 
+    public void calculateNewLimits(BigDecimal[] vectorOriginal){
+        for (int i = 0; i< vectorOriginal.length; i++) {
+            if(lowerLimitScale == null && upperLimitScale == null){
+                lowerLimitScale = new BigDecimal[vectorOriginal.length];
+                upperLimitScale = new BigDecimal[vectorOriginal.length];
+            }
+            upperLimitScale[i] = (upperLimitScale[i]==null)?vectorOriginal[i]:upperLimitScale[i];
+            lowerLimitScale[i] = (lowerLimitScale[i]==null)?vectorOriginal[i]:lowerLimitScale[i];
+
+            upperLimitScale[i]=(vectorOriginal[i].compareTo(upperLimitScale[i])>0)?
+                    vectorOriginal[i]:upperLimitScale[i];
+            lowerLimitScale[i]=(vectorOriginal[i].compareTo(lowerLimitScale[i])<0)?
+                    vectorOriginal[i]:lowerLimitScale[i];
+
+        }
+    }
+
     public BigDecimal[] getLowerLimitScale() {
         return lowerLimitScale;
     }
@@ -115,6 +132,17 @@ public class Modelo {
                             ,new Termino(new int[]{0, 0, 0, 1, 0})};
 
         return new Modelo(terminos);
+    }
+
+    public void eraseLimits(){
+        this.upperLimitScale = null;
+        this.lowerLimitScale = null;
+    }
+
+    public void setCoeficientes(BigDecimal[] coeficientes){
+        for (int i = 0; i < this.terminos.length; i++) {
+                this.terminos[i].setCoeficiente(coeficientes[i]);
+        }
     }
 
 }

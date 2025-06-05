@@ -9,14 +9,14 @@ public class MatrixObject {
     private final BigDecimal[][] matrix;
     private final BigDecimal[] vectorSolution;
 
-    public MatrixObject(List<Vector> matriwx) {
-        BigDecimal[][] matrix_ = new BigDecimal[matriwx.size()][matriwx.size()];
-        BigDecimal[] vector_ = new BigDecimal[matriwx.size()];
-        for (int i = 0; i < matriwx.size(); i++) {
-            for (int j = 0; j < matriwx.size(); j++) {
-                matrix_[i][j] = matriwx.get(i).getVector()[j];
+    public MatrixObject(List<Vector> matrix) {
+        BigDecimal[][] matrix_ = new BigDecimal[matrix.size()][matrix.size()];
+        BigDecimal[] vector_ = new BigDecimal[matrix.size()];
+        for (int i = 0; i < matrix.size(); i++) {
+            for (int j = 0; j < matrix.size(); j++) {
+                matrix_[i][j] = matrix.get(i).getVector()[j];
             }
-            vector_[i]=matriwx.get(i).getVector()[matriwx.size()];
+            vector_[i]=matrix.get(i).getVector()[matrix.size()];
         }
         this.matrix = matrix_;
         this.vectorSolution = vector_;

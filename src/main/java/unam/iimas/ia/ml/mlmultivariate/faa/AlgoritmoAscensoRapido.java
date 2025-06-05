@@ -9,14 +9,12 @@ import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class AlgoritmoAscensoRapido {
 
     private static final int PRECISION = 20;
+    private static final int RHO = 6;
 
     private LoadFile file;
 
@@ -27,31 +25,47 @@ public class AlgoritmoAscensoRapido {
 
     public void run(AlgoritmoAscensoRapido aaf){
         Modelo m = Modelo.getCustomModel();
-        //prepare data;
-        List<Vector> vectores= mapToVectors(m,stabilizeVectorsZeroToOne(mapToPolynomial(
-                getDataFromFile().getVectores()
-                , m),m.getLowerLimitScale(), m.getUpperLimitScale()));
+        List<BigDecimal[]> D = getDataFromFile().getVectores();
+        List<BigDecimal[]> P = mapToPolynomial(D,m);
+        List<BigDecimal[]> R = stabilizeVectors(P,m);
+        List<BigDecimal[]> S = scaleVectorsZeroToOne(R,m);
+        List<Vector> epsilonPhi = mapToVectors(S,m);
+        List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
 
-        System.out.println(m);
-        
-        List<Vector> vectoresToEvaluate = getRandomVectorsToEvaluate(vectores);
+        printVectores(epsilonTetha);
+        printVectores(epsilonPhi);
+
+        BigDecimal[] solution =  Matrix.getGaussiaSolution(new MatrixObject(epsilonTetha));
+
+        m.setCoeficientes(solution);
+
+        PriorityQueue<Vector> epsilonTetha_ = new PriorityQueue<>();
+        PriorityQueue<Vector> epsilonPhi_ = new PriorityQueue<>();
 
         for (Vector v:
-             vectores) {
-            System.out.println(v);
+             epsilonTetha ) {
+            epsilonTetha_.add(v.evaluate());
+        }
+
+        for (Vector v:
+                epsilonPhi ) {
+            epsilonPhi_.add(v.evaluate());
+        }
+
+        while (!epsilonTetha_.isEmpty()) {
+            System.out.println(epsilonTetha_.poll());
+        }
+        System.out.println();
+        System.out.println();
+        while (!epsilonPhi_.isEmpty()) {
+            System.out.println(epsilonPhi_.poll());
         }
         System.out.println();
 
         for (Vector v:
-                vectoresToEvaluate) {
+                epsilonPhi_) {
             System.out.println(v);
         }
-
-        System.out.println("------------------------------------------------------");
-
-        BigDecimal[] solution= Matrix.getGaussiaSolution(new MatrixObject(vectoresToEvaluate));
-
-        System.out.println(Arrays.toString(solution));
 
 
     }
@@ -59,18 +73,16 @@ public class AlgoritmoAscensoRapido {
         this.file = new LoadFile();
     }
 
-    private static List<BigDecimal[]> stabilizeVectorsZeroToOne(List<BigDecimal[]> vectores,
-                                BigDecimal[] lowerValues,
-                                BigDecimal[] upperValues){
+    private static List<BigDecimal[]> scaleVectorsZeroToOne(List<BigDecimal[]> vectores,
+                                Modelo modelo){
         List<BigDecimal[]> stabilizedVectors = new ArrayList<>();
         for (BigDecimal[] vectorOriginal:
         vectores) {
             BigDecimal[] vector = new BigDecimal[vectorOriginal.length];
             for (int i = 0; i<vector.length;i++) {
                 BigDecimal x = new BigDecimal(vectorOriginal[i].toString());
-                BigDecimal a = lowerValues[i];
-                BigDecimal b = upperValues[i];
-                vector[i] = vectorOriginal[i].add(getNoise());
+                BigDecimal a = modelo.getLowerLimitScale()[i];
+                BigDecimal b = modelo.getUpperLimitScale()[i];
                 vector[i] = ((x.subtract(a))).
                         divide((b.subtract(a)), PRECISION, RoundingMode.HALF_UP);
             }
@@ -78,7 +90,6 @@ public class AlgoritmoAscensoRapido {
         }
         return stabilizedVectors;
     }
-
 
     private static  BigDecimal[] escaleAtoB(BigDecimal[] vector,
                                             BigDecimal[] lowerValues,
@@ -97,7 +108,7 @@ public class AlgoritmoAscensoRapido {
         Random random = new Random();
         int mult = (random.nextBoolean())?1:-1;
         return BigDecimal.valueOf(random.nextDouble()*mult).
-                multiply(new BigDecimal("1e-"+(PRECISION-1)));
+                multiply(new BigDecimal("1e-"+(RHO)));
     }
 
     private  static  List<BigDecimal[]> mapToPolynomial(List<BigDecimal[]> vectors, Modelo modelo){
@@ -106,20 +117,19 @@ public class AlgoritmoAscensoRapido {
         vectors) {
             vectorsToPolynomial.add(modelo.getPolynomialVector(vector));
         }
-
         return vectorsToPolynomial;
     }
     public LoadFile getDataFromFile() {
         return file;
     }
 
-    public String showVectorValues(BigDecimal[] vector){
+    public static String showVectorValues(BigDecimal[] vector){
         return Arrays.toString(Arrays.stream(vector)
                 .map(BigDecimal::toString)
                 .toArray(String[]::new));
     }
     
-    public static List<Vector> mapToVectors(Modelo modelo, List<BigDecimal[]> vectores){
+    public static List<Vector> mapToVectors(List<BigDecimal[]> vectores, Modelo modelo){
         List<Vector> vectores_ = new ArrayList<>();
         for (int i = 0; i < vectores.size(); i++) {
             vectores_.add(new Vector(i, modelo, vectores.get(i)));
@@ -137,5 +147,43 @@ public class AlgoritmoAscensoRapido {
             vectores.remove(index);
         }
         return vectoresRandom;
+    }
+
+    public static Modelo getCoeficientModel(BigDecimal[] gaussianSol, Modelo modelo){
+        for (int i = 0; i < gaussianSol.length; i++) {
+            modelo.getTerminos()[i].setCoeficiente(gaussianSol[i]);
+        }
+        return modelo;
+    }
+
+    public static void printVectores(List<Vector> vectores){
+        for (Vector v:
+                vectores) {
+            System.out.println(v);
+        }
+        System.out.println();
+    }
+    public static void printBigDecimalsVectors(List<BigDecimal[]> vectores){
+        for (BigDecimal[] v:
+                vectores) {
+            System.out.println(showVectorValues(v));
+        }
+        System.out.println();
+    }
+
+    public static List<BigDecimal[]> stabilizeVectors(List<BigDecimal[]> vectores,Modelo m){
+        List<BigDecimal[]> vectores_ = new ArrayList<>();
+        m.eraseLimits();
+        for (BigDecimal[] v:
+                vectores) {
+            BigDecimal[] vector = new BigDecimal[v.length];
+            for (int i = 0; i < v.length -1; i++) {
+                vector[i] = v[i].add(getNoise());
+            }
+            vector[v.length-1] = v[v.length-1];
+            m.calculateNewLimits(vector);
+            vectores_.add(vector);
+        }
+        return vectores_;
     }
 }
