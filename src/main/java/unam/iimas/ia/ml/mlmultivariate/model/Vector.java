@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 public class Vector implements Comparable<Vector>{
-    private Long id;
     private final int index;
     private Modelo modelo;
     private BigDecimal[] vector;
@@ -48,14 +47,6 @@ public class Vector implements Comparable<Vector>{
 
     public void setError(BigDecimal error) {
         this.error = error;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public int getIndex() {

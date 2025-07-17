@@ -10,6 +10,7 @@ public class MatrixObject {
     private final BigDecimal[] vectorSolution;
 
     public MatrixObject(List<Vector> matrix) {
+
         BigDecimal[][] matrix_ = new BigDecimal[matrix.size()][matrix.size()];
         BigDecimal[] vector_ = new BigDecimal[matrix.size()];
         for (int i = 0; i < matrix.size(); i++) {

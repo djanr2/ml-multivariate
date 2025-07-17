@@ -31,9 +31,6 @@ public class Termino {
     }
 
 
-
-
-
     public static int getRandomTerminosNumber(){
         Random random = new Random();
         return random.nextInt(MINIMO_TERMINO,MAXIMO_TERMINO + 1);// Número + 1 inclusive
@@ -102,7 +99,7 @@ public class Termino {
                 val = val.multiply(variables[i].pow(this.getPotencias()[i]));
             }
         }
-        return val;
+        return val.setScale(Precision.MIN_PRECISION,Precision.ROUNDING_MODE);
     }
 
     @Override

@@ -60,12 +60,13 @@ public class Modelo {
 
     public BigDecimal[] getPolynomialVector(BigDecimal[] vectorOriginal){
         BigDecimal[] polynomialVector = new BigDecimal[this.getTerminos().length+1];
-
         //Se agrega la variable dependiente
+        // Es decir no se modifica el valor de el ultimo termino que esta como variable independiete
+        // al mapéarse al modelo
         polynomialVector[this.getTerminos().length] = vectorOriginal[vectorOriginal.length-1];
-
+//TODO ANALYZE IF LOWER LIMIT IS NEEDED TO SET AS 0
         for (int i = 0; i< polynomialVector.length; i++) {
-            if(i< (polynomialVector.length-1)){
+            if(i< (polynomialVector.length-1)){ // se excluye el ultimo valor pues ya se agrego en las lineas anteriores
                 polynomialVector[i] = this.getTerminos()[i].evaluate(vectorOriginal);
                 if(lowerLimitScale == null && upperLimitScale == null){
                     lowerLimitScale = new BigDecimal[polynomialVector.length];
