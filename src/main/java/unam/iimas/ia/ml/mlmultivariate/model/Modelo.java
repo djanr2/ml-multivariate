@@ -132,7 +132,11 @@ public class Modelo {
                             ,new Termino(new int[]{0, 0, 1, 0, 0})
                             ,new Termino(new int[]{0, 0, 0, 1, 0})};
 
-        return new Modelo(terminos);
+        Termino[]  terminos2 = {new Termino(new int[]{1, 0, 0, 0, 1})
+                ,new Termino(new int[]{0, 1, 0, 1, 0})
+                ,new Termino(new int[]{0, 0, 1, 0, 0})};
+
+        return new Modelo(terminos2);
     }
 
     public void eraseLimits(){

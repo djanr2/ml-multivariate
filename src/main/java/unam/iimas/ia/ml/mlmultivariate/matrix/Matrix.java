@@ -44,10 +44,21 @@ public class Matrix {
         };
 
         Matrix inverter = new Matrix();
-        BigDecimal[][] inverse = inverter.invertStepByStep(matrix);
+        BigDecimal[][] inverse = inverter.invertMatrix(matrix);
 
         System.out.println("\nFinal Inverse Matrix:");
         inverter.printMatrix(inverse);
+
+        BigDecimal[][] cofactor = {
+                {new BigDecimal(1), new BigDecimal(2), new BigDecimal(3), new BigDecimal(3)},
+                {new BigDecimal(1), new BigDecimal(-2), new BigDecimal(1), new BigDecimal(-2)},
+                {new BigDecimal(1), new BigDecimal(1), new BigDecimal(2), new BigDecimal(-1)},
+                {new BigDecimal(2), new BigDecimal(2), new BigDecimal(-1), new BigDecimal(-1)}
+        };
+
+        BigDecimal c= getCofactor(3,0, cofactor);
+
+        System.out.println(c);
 
     }
 
@@ -72,7 +83,7 @@ public class Matrix {
         for (int i = n - 1; i >= 0; i--) {
             x[i] = b[i];
             for (int j = i + 1; j < n; j++) {
-                x[i] = x[i].subtract(A[i][j].multiply(x[j]));
+                x[i] = x[i].subtract(A[i][j].multiply(x[j])).setScale(PRECISION, ROUNDING_MODE);
             }
         }
         return x;
@@ -81,19 +92,16 @@ public class Matrix {
     public static BigDecimal[] getGaussiaSolution(MatrixObject matrix){
         return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
     }
-    public BigDecimal[][] invertStepByStep(BigDecimal[][] matrix) {
 
+    public BigDecimal[][] invertMatrix(BigDecimal[][] matrix) {
         this.size = matrix.length;
         if (size != matrix[0].length)
             throw new IllegalArgumentException("Matrix must be square.");
-
         //Copy Matrix into another
         this.original = new BigDecimal[size][size];
         for (int i = 0; i < size; i++)
             System.arraycopy(matrix[i], 0, original[i], 0, size);
-
         BigDecimal[][] augmented = createAugmentedMatrix();
-
         for (int i = 0; i < size; i++) {
             BigDecimal pivot = augmented[i][i];
             if (pivot.compareTo(BigDecimal.ZERO) == 0) {
@@ -115,13 +123,11 @@ public class Matrix {
                 }
             }
         }
-
         // Extract inverse from augmented matrix
         BigDecimal[][] inverse = new BigDecimal[size][size];
         for (int i = 0; i < size; i++) {
             System.arraycopy(augmented[i], size, inverse[i], 0, size);
         }
-
         return inverse;
     }
 
@@ -164,4 +170,60 @@ public class Matrix {
             System.out.println();
         }
     }
+
+    public static BigDecimal getCofactor(int row, int column, BigDecimal[][] matrix) {
+        BigDecimal[][] minor = getMinor(matrix, row, column);
+        BigDecimal detMinor = determinant(minor);
+
+        // Calcular el signo (-1)^(i+j)
+        int sign = ((row + column) % 2 == 0) ? 1 : -1;
+        return detMinor.multiply(BigDecimal.valueOf(sign));
+    }
+
+    public static BigDecimal[][] getMinor(BigDecimal[][] matrix, int rowToRemove, int colToRemove) {
+        int size = matrix.length;
+        BigDecimal[][] minor = new BigDecimal[size - 1][size - 1];
+
+        int r = 0;
+        for (int i = 0; i < size; i++) {
+            if (i == rowToRemove) continue;
+            int c = 0;
+            for (int j = 0; j < size; j++) {
+                if (j == colToRemove) continue;
+                minor[r][c] = matrix[i][j];
+                c++;
+            }
+            r++;
+        }
+
+        return minor;
+    }
+    public static BigDecimal determinant(BigDecimal[][] matrix) {
+        int n = matrix.length;
+
+        if (n == 1) {
+            return matrix[0][0];
+        }
+
+        if (n == 2) {
+            return matrix[0][0].multiply(matrix[1][1]).subtract(matrix[0][1].multiply(matrix[1][0])).setScale(PRECISION, ROUNDING_MODE);
+        }
+
+        BigDecimal det = BigDecimal.ZERO;
+
+        for (int j = 0; j < n; j++) {
+            BigDecimal[][] minor = getMinor(matrix, 0, j);
+            BigDecimal cofactor = matrix[0][j].multiply(determinant(minor)).setScale(PRECISION, ROUNDING_MODE);
+            if (j % 2 == 0) {
+                det = det.add(cofactor);
+            } else {
+                det = det.subtract(cofactor);
+            }
+        }
+
+        return det.setScale(PRECISION, ROUNDING_MODE);
+    }
+
+
+
 }
