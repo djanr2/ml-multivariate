@@ -144,9 +144,15 @@ public class Modelo {
         this.lowerLimitScale = null;
     }
 
-    public void setCoeficientes(BigDecimal[] coeficientes){
+    public void setCoeficientes(BigDecimal[][] coeficientes){
         for (int i = 0; i < this.terminos.length; i++) {
-                this.terminos[i].setCoeficiente(coeficientes[i]);
+                this.terminos[i].setCoeficiente(coeficientes[i][0]);
+        }
+    }
+
+    public void setSolutionCoeficientes(BigDecimal[][] coeficientes){
+        for (int i = 1; i < coeficientes.length; i++) {
+            this.terminos[i-1].setCoeficiente(coeficientes[i][0]);
         }
     }
 

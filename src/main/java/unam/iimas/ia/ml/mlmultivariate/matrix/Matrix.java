@@ -10,8 +10,6 @@ public class Matrix {
 
     private static final int PRECISION = Precision.MIN_PRECISION;
     private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
-    private  BigDecimal[][] original;
-    private  int size;
 
 
     public static void main(String[] args) {
@@ -22,16 +20,23 @@ public class Matrix {
                 {new BigDecimal(1), new BigDecimal(8), new BigDecimal(64), new BigDecimal(512)}
         };
 
-        BigDecimal[] b = {new BigDecimal(2), new BigDecimal(5), new BigDecimal(3), new BigDecimal(4.5)};
+        BigDecimal[][] b = {
+                {new BigDecimal(2)},
+                {new BigDecimal(5)},
+                {new BigDecimal(3)},
+                {new BigDecimal(4.5)}
+        };
 
 
-        BigDecimal[] solution = gaussianElimination(A, b);
+
+
+        BigDecimal[][] solution = gaussianElimination(A, b);
 
         System.out.printf("Solution:%n");
-        System.out.printf("w = %.6f%n", solution[0]);
-        System.out.printf("x = %.6f%n", solution[1]);
-        System.out.printf("y = %.6f%n", solution[2]);
-        System.out.printf("z = %.6f%n", solution[3]);
+        System.out.printf("w = %.6f%n", solution[0][0]);
+        System.out.printf("x = %.6f%n", solution[1][0]);
+        System.out.printf("y = %.6f%n", solution[2][0]);
+        System.out.printf("z = %.6f%n", solution[3][0]);
 
 
         BigDecimal[][] matrix = {
@@ -56,13 +61,22 @@ public class Matrix {
                 {new BigDecimal(2), new BigDecimal(2), new BigDecimal(-1), new BigDecimal(-1)}
         };
 
-        BigDecimal c= getCofactor(3,0, cofactor);
+        BigDecimal[][] cofactor2 = {
+            {new BigDecimal(1),new BigDecimal( 3.4036574123), new BigDecimal( 0.7777104424), new BigDecimal( 2.5450038943)},
+            {new BigDecimal(1),new BigDecimal(-3.2753809464), new BigDecimal(-1.2259223606), new BigDecimal(-1.2616234678)},
+            {new BigDecimal(1),new BigDecimal(-2.4268597233), new BigDecimal(-1.6606458474), new BigDecimal(-1.1460239692)},
+            {new BigDecimal(1),new BigDecimal(-0.2541887185), new BigDecimal(-3.5013090525), new BigDecimal( 2.4086533150)}
+        };
+
+        System.out.println("Cofactor");
+
+        BigDecimal c= getCofactor(3,0, cofactor2);
 
         System.out.println(c);
 
     }
 
-    public static BigDecimal[] gaussianElimination(BigDecimal[][] A, BigDecimal[] b) {
+    public static BigDecimal[][] gaussianElimination(BigDecimal[][] A, BigDecimal[][] b) {
         int n = b.length;
 
         for (int pivot = 0; pivot < n; pivot++) {
@@ -70,38 +84,39 @@ public class Matrix {
             for (int j = pivot; j < n; j++) {
                 A[pivot][j] = A[pivot][j].divide(pivotVal, PRECISION, ROUNDING_MODE);
             }
-            b[pivot] =  b[pivot].divide(pivotVal, PRECISION, ROUNDING_MODE);
+            b[pivot][0] =  b[pivot][0].divide(pivotVal, PRECISION, ROUNDING_MODE);
             for (int i = pivot + 1; i < n; i++) {
                 BigDecimal factor = A[i][pivot];
                 for (int j = pivot; j < n; j++) {
                     A[i][j] = A[i][j].subtract(factor.multiply(A[pivot][j]));
                 }
-                b[i] = b[i].subtract(factor.multiply(b[pivot]));
+                b[i][0] = b[i][0].subtract(factor.multiply(b[pivot][0]));
             }
         }
-        BigDecimal[] x = new BigDecimal[n];
+        BigDecimal[][] x = new BigDecimal[n][1];
         for (int i = n - 1; i >= 0; i--) {
-            x[i] = b[i];
+            x[i][0] = b[i][0];
             for (int j = i + 1; j < n; j++) {
-                x[i] = x[i].subtract(A[i][j].multiply(x[j])).setScale(PRECISION, ROUNDING_MODE);
+                x[i][0] = x[i][0].subtract(A[i][j].multiply(x[j][0])).setScale(PRECISION, ROUNDING_MODE);
             }
         }
         return x;
     }
 
-    public static BigDecimal[] getGaussiaSolution(MatrixObject matrix){
+    public static BigDecimal[][] getGaussiaSolution(MatrixObject matrix){
         return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
     }
 
-    public BigDecimal[][] invertMatrix(BigDecimal[][] matrix) {
-        this.size = matrix.length;
+    public static BigDecimal[][] invertMatrix(BigDecimal[][] matrix) {
+        int size = matrix.length;
+        BigDecimal[][] original;
         if (size != matrix[0].length)
             throw new IllegalArgumentException("Matrix must be square.");
         //Copy Matrix into another
-        this.original = new BigDecimal[size][size];
+        original = new BigDecimal[size][size];
         for (int i = 0; i < size; i++)
             System.arraycopy(matrix[i], 0, original[i], 0, size);
-        BigDecimal[][] augmented = createAugmentedMatrix();
+        BigDecimal[][] augmented = createAugmentedMatrix(size, original);
         for (int i = 0; i < size; i++) {
             BigDecimal pivot = augmented[i][i];
             if (pivot.compareTo(BigDecimal.ZERO) == 0) {
@@ -131,7 +146,7 @@ public class Matrix {
         return inverse;
     }
 
-    private BigDecimal[][] createAugmentedMatrix() {
+    private static BigDecimal[][] createAugmentedMatrix(int size, BigDecimal[][] original) {
         BigDecimal[][] augmented = new BigDecimal[size][2 * size];
         for (int i = 0; i < size; i++) {
             System.arraycopy(original[i], 0, augmented[i], 0, size);
@@ -142,19 +157,19 @@ public class Matrix {
         return augmented;
     }
 
-    private void swapRows(BigDecimal[][] matrix, int row1, int row2) {
+    private static void swapRows(BigDecimal[][] matrix, int row1, int row2) {
         BigDecimal[] temp = matrix[row1];
         matrix[row1] = matrix[row2];
         matrix[row2] = temp;
     }
 
-    private void normalizeRow(BigDecimal[][] matrix, int row, BigDecimal pivot) {
+    private static void normalizeRow(BigDecimal[][] matrix, int row, BigDecimal pivot) {
         for (int j = 0; j < matrix[row].length; j++) {
             matrix[row][j] = matrix[row][j].divide(pivot, PRECISION, ROUNDING_MODE);
         }
     }
 
-    private void eliminateRow(BigDecimal[][] matrix, int targetRow, int pivotRow) {
+    private static void eliminateRow(BigDecimal[][] matrix, int targetRow, int pivotRow) {
         BigDecimal factor = matrix[targetRow][pivotRow];
         for (int j = 0; j < matrix[targetRow].length; j++) {
             BigDecimal value = factor.multiply(matrix[pivotRow][j]);
@@ -162,7 +177,7 @@ public class Matrix {
         }
     }
 
-    private void printMatrix(BigDecimal[][] matrix) {
+    public static void printMatrix(BigDecimal[][] matrix) {
         for (BigDecimal[] row : matrix) {
             for (BigDecimal val : row) {
                 System.out.print(val+" ");
@@ -222,6 +237,47 @@ public class Matrix {
         }
 
         return det.setScale(PRECISION, ROUNDING_MODE);
+    }
+
+    public static BigDecimal[][] mul(BigDecimal[][] a, BigDecimal[][] b) {
+        int filasA = a.length;
+        int columnasA = a[0].length;
+        int filasB = b.length;
+        int columnasB = b[0].length;
+
+        // Validar dimensiones
+        if (columnasA != filasB) {
+            throw new IllegalArgumentException("Las dimensiones de las matrices no son compatibles para la multiplicación.");
+        }
+
+        // Crear matriz resultado
+        BigDecimal[][] resultado = new BigDecimal[filasA][columnasB];
+
+        // Inicializar resultado con ceros
+        for (int i = 0; i < filasA; i++) {
+            for (int j = 0; j < columnasB; j++) {
+                resultado[i][j] = BigDecimal.ZERO;
+            }
+        }
+
+        // Multiplicación de matrices
+        for (int i = 0; i < filasA; i++) {
+            for (int j = 0; j < columnasB; j++) {
+                for (int k = 0; k < columnasA; k++) {
+                    resultado[i][j] = resultado[i][j].add(a[i][k].multiply(b[k][j])).setScale(PRECISION, ROUNDING_MODE);
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    public static BigDecimal[][] getMatrixRow(BigDecimal[][] matrix, int row){
+        BigDecimal[][] rowMatrix = new BigDecimal[1][matrix[0].length];
+        for (int i = 0; i < matrix[0].length; i++) {
+            rowMatrix[0][i] = matrix[row][i];
+        }
+        return rowMatrix;
     }
 
 

@@ -30,39 +30,97 @@ public class AlgoritmoAscensoRapido {
         aaf.run(aaf);
     }
 
-    public void run(AlgoritmoAscensoRapido aaf){
+    public void run(AlgoritmoAscensoRapido aaf) {
 
         Modelo m = Modelo.getCustomModel();
 
-        //TODO sTART WORKING WITH VECTORS ARRAYS INSTEAD OF BIGDECIMAL ARRAY
-
+        //TODO START WORKING WITH VECTORS ARRAYS INSTEAD OF BIGDECIMAL ARRAY
         List<BigDecimal[]> d = aaf.getFile().getVectores();
 
-        List<BigDecimal[]> p = mapToPolynomial(d,m);
+        List<BigDecimal[]> p = mapToPolynomial(d, m);
 
-        List<BigDecimal[]> r = stabilizeVectors(p,m);
+        //List<BigDecimal[]> r = scaleVectorsZeroToOne(p,m);
 
-        List<BigDecimal[]> s = scaleVectorsZeroToOne(r,m);
+        List<BigDecimal[]> s = stabilizeVectors(p, m);
 
-        List<Vector> epsilonPhi = mapToVectors(s,m);
+        List<Vector> epsilonPhi = mapToVectors(s, m);
         //TODO PARA QUE SACA LA MATRIZ TRANSPUESTA.
         //List<Vector> epsilonTetha   = getOrderVectorsToEvaluate(epsilonPhi);
         //List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
 
-        int[] customVectors = {18,15,14,5};
-        List<Vector> epsilonTetha   = getCustomVectorsToEvaluate(epsilonPhi, customVectors);
+        int[] customVectors = {19, 15, 14, 5};
+
+        List<Vector> epsilonTetha = getCustomVectorsToEvaluate(epsilonPhi, customVectors);
 
         List<Vector> minMaxEquation = getAMatrix(epsilonTetha, m);
 
-        BigDecimal[] solution = Matrix.getGaussiaSolution(new MatrixObject(minMaxEquation));
+        MatrixObject matrixA = new MatrixObject(minMaxEquation);
 
-        for (BigDecimal x:
-             solution) {
-            System.out.println(x);
+        BigDecimal[][] b = Matrix.invertMatrix(matrixA.getMatrix());
+
+        BigDecimal[][] c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
+
+        m.setSolutionCoeficientes(c);
+
+        Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
+
+        BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
+
+        BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0));
+
+        int maxBetaIndex = getMaxBetaIndex(betas);
+
+        swapVector(epsilonTetha,epsilonPhi,epsilonTetha.get(maxBetaIndex),epsilonPhiVector);
+
+    }
+
+    public void swapVector( List<Vector> epsilonTetha,List<Vector> epsilonPhi, Vector epsilonThetaVector, Vector epsilonPhiVector){
+        epsilonTetha.remove(epsilonThetaVector);
+        epsilonTetha.add(epsilonPhiVector);
+        epsilonPhi.remove(epsilonPhiVector);
+        epsilonPhi.add(epsilonThetaVector);
+    }
+
+
+
+
+
+    public Vector getEpsilonPhiVector(List<Vector> epsilonPhi){
+        PriorityQueue<Vector> epsilonPhi_ = new PriorityQueue<>();
+        for (Vector v:
+                epsilonPhi ) {
+            epsilonPhi_.add(v.evaluate());
         }
+        //System.out.println(epsilonPhi_.peek());
+        return epsilonPhi_.peek();
+    }
 
-        printVectores(minMaxEquation);
+    private BigDecimal[][] getCoeficientsAndEpsilonTetha(BigDecimal[][] matrixB, BigDecimal[][] fx){
+        //System.out.println("CRAMER RULE");
+        return Matrix.mul(matrixB, fx);
+    }
 
+    private BigDecimal[][] getLamdas(BigDecimal[][] vector, BigDecimal[][] matrixB){
+        return Matrix.mul(vector, matrixB);
+    }
+
+    private BigDecimal[][] getBetas(BigDecimal[][] lamdas, BigDecimal[][] errorRow){
+        BigDecimal[][] betas = new BigDecimal[1][lamdas[0].length];
+        for (int i = 0; i < lamdas[0].length; i++) {
+            betas[0][i] = lamdas[0][i].divide(errorRow[0][i], PRECISION, ROUNDING_MODE);
+        }
+        return betas;
+    }
+    private int getMaxBetaIndex(BigDecimal[][] betas){
+        int k=0;
+        BigDecimal maxLamda = BigDecimal.ZERO;
+        for (int i = 0; i < betas[0].length; i++) {
+            if(maxLamda.compareTo(betas[0][i].abs())<0){
+                maxLamda = betas[0][i].abs();
+                k=i;
+            }
+        }
+        return k;
     }
 
     private BigDecimal[] addEpsilonThetaErrorToMinMaxCoeficients(BigDecimal internalErrorEpsilonTetha, BigDecimal[] minMaxCoeficients){
@@ -161,6 +219,7 @@ public class AlgoritmoAscensoRapido {
         for (int i:
                 index ) {
             vectoresCustom.add(vectores.get(i));
+            vectores.remove(vectores.get(i));
         }
         return vectoresCustom;
     }
@@ -232,7 +291,6 @@ public class AlgoritmoAscensoRapido {
                 deltaSigns[row][col + 1] =  epsilonTetha.get(row).getVector()[col];
             }
         }
-
         for (int row = 0; row < matrixSize; row++) {
             cofactor[row] = Matrix.getCofactor(row, 0, deltaSigns);
         }
@@ -240,22 +298,23 @@ public class AlgoritmoAscensoRapido {
         for (int i = 1; i < matrixSize; i++) {
             for (int j = 0; j < matrixSize; j++) {
                 equation[i-1][j] = cofactor[j].multiply(deltaSigns[j][i]).setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
-                if( j == (matrixSize-1) && lastCofactorSign == -1) { //last sign == -1 if apply
+                // System.out.print("["+cofactor[j]+ "*"+deltaSigns[j][i]+":"+equation[i-1][j]+"] ");
+                if( j == (matrixSize-1) && lastCofactorSign == 1) { //last sign == -1 if apply
                     equation[i - 1][j] = equation[i - 1][j].multiply(new BigDecimal(-1));
                 }
             }
+            //System.out.println();
             minMaxEquation.add(new Vector(i, m, equation[i-1]));
         }
 
-        BigDecimal[] solution = Matrix.getGaussiaSolution(new MatrixObject(minMaxEquation));
+        BigDecimal[][] solution = Matrix.getGaussiaSolution(new MatrixObject(minMaxEquation));
 
         for (int i = 0; i < solution.length; i++) {
-            deltaSigns[i][0] = (solution[i].compareTo(BigDecimal.ZERO)>0)?BigDecimal.ONE:new BigDecimal(-1);
+            deltaSigns[i][0] = (solution[i][0].compareTo(BigDecimal.ZERO)>0)?BigDecimal.ONE:new BigDecimal(-1);
         }
+
         deltaSigns[solution.length][0] = new BigDecimal(lastCofactorSign);
-
         minMaxEquation.clear();
-
         for (int i = 0; i < epsilonTetha.size(); i++) {
             epsilonTetha.get(i).getVector();
             BigDecimal[] expanded = new BigDecimal[epsilonTetha.get(i).getVector().length+1];
@@ -283,9 +342,7 @@ public class AlgoritmoAscensoRapido {
         BigDecimal internalErrorEpsilonTetha = epsilonTetha_.peek().getError();
         BigDecimal externalErrorEpsilonPhi = epsilonPhi_.peek().getError();
 
-        while (!epsilonTetha_.isEmpty()) {
-            System.out.println(epsilonTetha_.poll());
-        }
+
         System.out.println();
 
         while (!epsilonPhi_.isEmpty()) {

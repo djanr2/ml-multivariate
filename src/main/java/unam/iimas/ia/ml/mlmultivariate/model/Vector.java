@@ -1,6 +1,7 @@
 package unam.iimas.ia.ml.mlmultivariate.model;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 public class Vector implements Comparable<Vector>{
@@ -9,6 +10,9 @@ public class Vector implements Comparable<Vector>{
     private BigDecimal[] vector;
     private BigDecimal error;
     private BigDecimal value;
+    private static final int PRECISION = Precision.MIN_PRECISION;
+    private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
+    private int sign;
 
     public Vector(int index, Modelo modelo, BigDecimal[] vector) {
         this.index = index;
@@ -21,7 +25,9 @@ public class Vector implements Comparable<Vector>{
         for (int i = 0; i < modelo.getTerminos().length; i++) {
             value = value.add(vector[i].multiply(modelo.getTerminos()[i].getCoeficiente()));
         }
-        error =  (value.subtract(vector[vector.length-1])).abs();
+        error =  (value.subtract(vector[vector.length-1]));
+        sign = (error.signum() < 0)?-1:1;
+        error = error.abs().setScale(PRECISION, ROUNDING_MODE);
         return this;
     }
 
@@ -61,10 +67,27 @@ public class Vector implements Comparable<Vector>{
         this.value = value;
     }
 
+    public BigDecimal[][] getMiMaxSignVector(){
+        BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
+
+        minMax[0][0] = error.multiply(new BigDecimal(sign));
+        for (int i = 0; i < this.vector.length-1; i++) {
+            minMax[0][i+1] = this.vector[i];
+        }
+        return minMax;
+    }
+    public int getSign() {
+        return sign;
+    }
+    public void setSign(int sign) {
+        this.sign = sign;
+    }
+
     @Override
     public String toString(){
         //return this.index+" "+error;
-        return this.index+" "+Arrays.toString(this.vector)+ " = " + error;
+        String sign_ = (sign<0)?"-":"";
+        return this.index+" "+Arrays.toString(this.vector)+ " = " +sign_+ error;
     }
 
     @Override
