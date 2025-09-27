@@ -92,11 +92,15 @@ public class Termino {
     }
 
     public BigDecimal evaluate(BigDecimal[] variables){
-        BigDecimal val= new BigDecimal(1);
+        BigDecimal val= BigDecimal.ONE;
         if (this.potencia== 0){return val;}
         for (int i = 0; i < this.getPotencias().length; i++) {
             if (this.getPotencias()[i]!=0){
                 val = val.multiply(variables[i].pow(this.getPotencias()[i]));
+                if (val.compareTo(BigDecimal.ZERO)==0){
+                    val = BigDecimal.ZERO;
+                    break;
+                }
             }
         }
         return val.setScale(Precision.MIN_PRECISION,Precision.ROUNDING_MODE);

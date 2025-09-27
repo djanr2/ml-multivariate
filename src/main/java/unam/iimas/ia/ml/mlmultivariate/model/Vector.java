@@ -13,11 +13,21 @@ public class Vector implements Comparable<Vector>{
     private static final int PRECISION = Precision.MIN_PRECISION;
     private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
     private int sign;
+    private int indexEpsilonTheta;
 
     public Vector(int index, Modelo modelo, BigDecimal[] vector) {
         this.index = index;
         this.modelo = modelo;
         this.vector = vector;
+    }
+
+    public int getIndexEpsilonTheta() {
+        return indexEpsilonTheta;
+    }
+
+    public Vector setIndexEpsilonTheta(int indexEpsilonTheta) {
+        this.indexEpsilonTheta = indexEpsilonTheta;
+        return this;
     }
 
     public Vector evaluate(){
@@ -69,8 +79,14 @@ public class Vector implements Comparable<Vector>{
 
     public BigDecimal[][] getMiMaxSignVector(){
         BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
-
-        minMax[0][0] = error.multiply(new BigDecimal(sign));
+        int sign_ = 0;
+        if(sign > 0){
+            sign_ = -1;
+        }else{
+            sign_ = 1;
+        }
+        //minMax[0][0] = error.multiply(new BigDecimal(sign));
+        minMax[0][0] = BigDecimal.ONE.multiply(new BigDecimal(sign_));
         for (int i = 0; i < this.vector.length-1; i++) {
             minMax[0][i+1] = this.vector[i];
         }

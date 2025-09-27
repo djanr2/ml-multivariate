@@ -2,11 +2,13 @@ package unam.iimas.ia.ml.mlmultivariate.matrix;
 
 
 import unam.iimas.ia.ml.mlmultivariate.model.Precision;
+import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.List;
 
 public class Matrix {
 
@@ -15,6 +17,51 @@ public class Matrix {
 
 
     public static void main(String[] args) {
+        BigDecimal[][] matriz = {
+                {
+                        new BigDecimal("-0.486313"), new BigDecimal("-0.972626"), new BigDecimal("1.458939"),
+                        new BigDecimal("-0.583575"), new BigDecimal("0.236500"), new BigDecimal("0.230026"),
+                        new BigDecimal("-0.117049")
+                },
+                {
+                        new BigDecimal("-0.207350"), new BigDecimal("-0.414700"), new BigDecimal("0.622050"),
+                        new BigDecimal("-0.248820"), new BigDecimal("0.042994"), new BigDecimal("0.017830"),
+                        new BigDecimal("-0.187996")
+                },
+                {
+                        new BigDecimal("-1.581880"), new BigDecimal("-3.163760"), new BigDecimal("4.745640"),
+                        new BigDecimal("-1.898256"), new BigDecimal("2.502344"), new BigDecimal("7.916815"),
+                        new BigDecimal("8.520903")
+                },
+                {
+                        new BigDecimal("-1.871713"), new BigDecimal("-3.743427"), new BigDecimal("5.615140"),
+                        new BigDecimal("-2.246056"), new BigDecimal("3.503311"), new BigDecimal("13.114387"),
+                        new BigDecimal("14.371642")
+                },
+                {
+                        new BigDecimal("-1.867709"), new BigDecimal("-3.735418"), new BigDecimal("5.603127"),
+                        new BigDecimal("-2.241251"), new BigDecimal("3.488336"), new BigDecimal("13.030394"),
+                        new BigDecimal("14.277480")
+                },
+                {
+                        new BigDecimal("-1.255656"), new BigDecimal("-2.511312"), new BigDecimal("3.766968"),
+                        new BigDecimal("-1.506787"), new BigDecimal("1.576672"), new BigDecimal("3.959515"),
+                        new BigDecimal("4.029400")
+                },
+                {
+                        new BigDecimal("-1.628388"), new BigDecimal("-3.256777"), new BigDecimal("4.885165"),
+                        new BigDecimal("-1.954066"), new BigDecimal("2.651649"), new BigDecimal("8.635830"),
+                        new BigDecimal("9.333413")
+                }
+        };
+
+        BigDecimal[][] m = Matrix.transponer(matriz);
+        printMatrix(matriz);
+        System.out.println();
+        printMatrix(m);
+
+    }
+    public static void main2(String[] args) {
         BigDecimal[][] a = {
                 {new BigDecimal(1), new BigDecimal(1), new BigDecimal(1), new BigDecimal(1)},
                 {new BigDecimal(1), new BigDecimal(3), new BigDecimal(9), new BigDecimal(27)},
@@ -76,34 +123,6 @@ public class Matrix {
 
         System.out.println(c);
 
-        System.out.println("-----------------------------------------------------------------------");
-
-        // A y B = A^{-1}
-        BigDecimal[][] A = {
-                {bd("1"), bd("2")},
-                {bd("3"), bd("4")}
-        };
-
-        BigDecimal[][] B = {
-                {bd("-2"), bd("1")},
-                {bd("1.5"), bd("-0.5")}
-        };
-
-        // Reemplazamos la fila 0 con beta = [5, 6]
-        BigDecimal[][] beta = {
-                {bd("5"), bd("6")}
-        };
-
-        int fila = 0;
-
-        System.out.println("Inversa original B = A^{-1}:");
-        printMatrix(B);
-
-        BigDecimal[][] B_actualizada = updateInverse(B, A, fila, beta);
-
-        System.out.println("\nNueva inversa B' después de reemplazar fila " + fila + " con " + Arrays.deepToString(beta[0]) + ":");
-        printMatrix(B_actualizada);
-
     }
 
     public static BigDecimal[][] gaussianElimination(BigDecimal[][] A, BigDecimal[][] b) {
@@ -132,6 +151,26 @@ public class Matrix {
         }
         return x;
     }
+
+    public static BigDecimal[][] gaussianElimination(BigDecimal[][] augmentedMatrix) {
+        int rows = augmentedMatrix.length;
+        int cols = augmentedMatrix[0].length;
+
+        BigDecimal[][] A = new BigDecimal[rows][cols - 1];
+        BigDecimal[][] b = new BigDecimal[rows][1];
+
+        for (int i = 0; i < rows; i++) {
+            // Copy all but last column into A
+            for (int j = 0; j < cols - 1; j++) {
+                A[i][j] = augmentedMatrix[i][j];
+            }
+            // Last column is b
+            b[i][0] = augmentedMatrix[i][cols - 1];
+        }
+        return gaussianElimination(A, b);
+    }
+
+
 
     public static BigDecimal[][] getGaussiaSolution(MatrixObject matrix){
         return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
@@ -310,141 +349,70 @@ public class Matrix {
         return rowMatrix;
     }
 
-    //TODO TEOREMA DE LA MATRIZ INVERSA
+    public static BigDecimal[][] getMatrixCol(BigDecimal[][] matrix, int col){
+        BigDecimal[][] rowMatrix = new BigDecimal[matrix.length][1];
+        for (int j = 0; j < matrix.length; j++) {
+            rowMatrix[j][0] = matrix[j][col];
+        }
+        return rowMatrix;
+    }
 
-    static final MathContext MC = new MathContext(6);  // Precisión arbitraria
+    public static BigDecimal[][] addMatrices(BigDecimal[][] a, BigDecimal[][] b) {
+        validateSameSize(a, b);
+        int rows = a.length;
+        int cols = a[0].length;
+        BigDecimal[][] result = new BigDecimal[rows][cols];
 
-    // Multiplica una matriz (m x n) por un vector columna (n x 1) → resultado (m x 1)
-    public static BigDecimal[][] multiplyMatrixByColVector(BigDecimal[][] matrix, BigDecimal[][] colVector) {
-        int m = matrix.length;
-        int n = matrix[0].length;
-        BigDecimal[][] result = new BigDecimal[m][1];
-        for (int i = 0; i < m; i++) {
-            result[i][0] = BigDecimal.ZERO;
-            for (int j = 0; j < n; j++) {
-                result[i][0] = result[i][0].add(matrix[i][j].multiply(colVector[j][0], MC), MC);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result[i][j] = a[i][j].add(b[i][j]);
             }
         }
         return result;
     }
 
-    // Producto punto entre un vector fila (1 x m) y un vector columna (m x 1) → escalar
-    public static BigDecimal dotProduct(BigDecimal[][] rowVec, BigDecimal[][] colVec) {
-        int n = rowVec[0].length;
-        BigDecimal sum = BigDecimal.ZERO;
-        for (int i = 0; i < n; i++) {
-            sum = sum.add(rowVec[0][i].multiply(colVec[i][0], MC), MC);
-        }
-        return sum;
-    }
+    public static BigDecimal[][] subtractMatrices(BigDecimal[][] a, BigDecimal[][] b) {
+        validateSameSize(a, b);
+        int rows = a.length;
+        int cols = a[0].length;
+        BigDecimal[][] result = new BigDecimal[rows][cols];
 
-    // Producto externo: columna (m x 1) * fila (1 x n) = matriz (m x n)
-    public static BigDecimal[][] outerProduct(BigDecimal[][] col, BigDecimal[][] row) {
-        int m = col.length;
-        int n = row[0].length;
-        BigDecimal[][] result = new BigDecimal[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                result[i][j] = col[i][0].multiply(row[0][j], MC);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result[i][j] = a[i][j].subtract(b[i][j]);
             }
         }
         return result;
     }
 
-    // Resta de matrices: A - B
-    public static BigDecimal[][] subtractMatrices(BigDecimal[][] A, BigDecimal[][] B) {
-        int m = A.length;
-        int n = A[0].length;
-        BigDecimal[][] result = new BigDecimal[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                result[i][j] = A[i][j].subtract(B[i][j], MC);
+    public static BigDecimal[][] transponer(BigDecimal[][] matriz) {
+        int filas = matriz.length;
+        int columnas = matriz[0].length;
+
+        BigDecimal[][] transpuesta = new BigDecimal[columnas][filas];
+
+        for (int i = 0; i < filas; i++) {
+            for (int j = 0; j < columnas; j++) {
+                transpuesta[j][i] = matriz[i][j];
             }
         }
-        return result;
+        return transpuesta;
     }
 
-    // Escalar por matriz
-    public static BigDecimal[][] scalarMultiply(BigDecimal[][] matrix, BigDecimal scalar) {
-        int m = matrix.length;
-        int n = matrix[0].length;
-        BigDecimal[][] result = new BigDecimal[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                result[i][j] = matrix[i][j].multiply(scalar, MC);
-            }
+    private static void validateSameSize(BigDecimal[][] a, BigDecimal[][] b) {
+        if (a.length != b.length || a[0].length != b[0].length) {
+            throw new IllegalArgumentException("Matrices must be the same size");
         }
-        return result;
     }
 
-    // Clona una fila de A en forma de matriz 1xN
-    public static BigDecimal[][] getRow(BigDecimal[][] A, int rowIndex) {
-        int n = A[0].length;
-        BigDecimal[][] row = new BigDecimal[1][n];
-        for (int j = 0; j < n; j++) {
-            row[0][j] = A[rowIndex][j];
+    public static BigDecimal[][] getLeftDeterminant(List<Vector> matrix){
+        BigDecimal[][] v_ = new BigDecimal[matrix.size()][matrix.size()-1];
+
+        for (int  i = 0 ; i < matrix.size(); i ++ ){
+            v_[i]= Arrays.copyOf( matrix.get(i).getVector(),matrix.get(i).getVector().length - 1);
         }
-        return row;
+        return v_;
     }
-
-    // Clona una fila de B como vector fila 1xN
-    public static BigDecimal[][] getRowFromMatrix(BigDecimal[][] B, int rowIndex) {
-        int n = B[0].length;
-        BigDecimal[][] row = new BigDecimal[1][n];
-        for (int j = 0; j < n; j++) {
-            row[0][j] = B[rowIndex][j];
-        }
-        return row;
-    }
-
-    // Actualiza la inversa B usando el vector beta y la fila cambiada
-    public static BigDecimal[][] updateInverse(BigDecimal[][] B, BigDecimal[][] A, int rowIndex, BigDecimal[][] betaRow) {
-        BigDecimal[][] a_i = getRow(A, rowIndex); // fila original
-        int n = a_i[0].length;
-        BigDecimal[][] u = new BigDecimal[1][n];
-
-        for (int j = 0; j < n; j++) {
-            u[0][j] = betaRow[0][j].subtract(a_i[0][j], MC);
-        }
-
-        // u como columna (transpuesta)
-        BigDecimal[][] uCol = new BigDecimal[n][1];
-        for (int i = 0; i < n; i++) {
-            uCol[i][0] = u[0][i];
-        }
-
-        // Bu = B * u^T (columna)
-        BigDecimal[][] Bu = multiplyMatrixByColVector(B, uCol);
-
-        // e_i^T * B = fila i de B
-        BigDecimal[][] row_i_B = getRowFromMatrix(B, rowIndex);
-
-        // escalar: 1 + e_i^T B u^T
-        BigDecimal denominator = BigDecimal.ONE.add(dotProduct(row_i_B, uCol), MC);
-
-        if (denominator.abs().compareTo(new BigDecimal("1e-18")) < 0) {
-            throw new ArithmeticException("Denominador cercano a cero: la matriz A' no es invertible.");
-        }
-
-        // outer = (Bu) * (e_i^T B)
-        BigDecimal[][] outer = outerProduct(Bu, row_i_B);
-
-        // correction = outer / denominator
-        BigDecimal[][] correction = scalarMultiply(outer, BigDecimal.ONE.divide(denominator, MC));
-
-        // B' = B - correction
-        return subtractMatrices(B, correction);
-    }
-
-    // Atajo para crear BigDecimal
-    private static BigDecimal bd(String val) {
-        return new BigDecimal(val, MC);
-    }
-
-
-
-
-
 
 
 }

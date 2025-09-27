@@ -60,23 +60,24 @@ public class Modelo {
 
     public BigDecimal[] getPolynomialVector(BigDecimal[] vectorOriginal){
         BigDecimal[] polynomialVector = new BigDecimal[this.getTerminos().length+1];
-        //Se agrega la variable dependiente
+        // Se agrega la variable dependiente
         // Es decir no se modifica el valor de el ultimo termino que esta como variable independiete
         // al mapéarse al modelo
         polynomialVector[this.getTerminos().length] = vectorOriginal[vectorOriginal.length-1];
-//TODO ANALYZE IF LOWER LIMIT IS NEEDED TO SET AS 0
+       //TODO ANALYZE IF LOWER LIMIT IS NEEDED TO SET AS 0
         for (int i = 0; i< polynomialVector.length; i++) {
             if(i< (polynomialVector.length-1)){ // se excluye el ultimo valor pues ya se agrego en las lineas anteriores
                 polynomialVector[i] = this.getTerminos()[i].evaluate(vectorOriginal);
+                polynomialVector[i] = (polynomialVector[i].compareTo(BigDecimal.ZERO)==0)?
+                        BigDecimal.ZERO: polynomialVector[i];
                 if(lowerLimitScale == null && upperLimitScale == null){
                     lowerLimitScale = new BigDecimal[polynomialVector.length];
                     upperLimitScale = new BigDecimal[polynomialVector.length];
-                    if(lowerLimitScale[i] == null && polynomialVector[i].compareTo(new BigDecimal("1"))==0){
-                        lowerLimitScale[i] = new BigDecimal("0");
+                    if(lowerLimitScale[i] == null && polynomialVector[i].compareTo(new BigDecimal(1))==0){
+                        lowerLimitScale[i] = BigDecimal.ZERO;
                     }
                 }
             }
-
             upperLimitScale[i] = (upperLimitScale[i]==null)?polynomialVector[i]:upperLimitScale[i];
             lowerLimitScale[i] = (lowerLimitScale[i]==null)?polynomialVector[i]:lowerLimitScale[i];
 
@@ -84,7 +85,6 @@ public class Modelo {
                     polynomialVector[i]:upperLimitScale[i];
             lowerLimitScale[i]=(polynomialVector[i].compareTo(lowerLimitScale[i])<0)?
                     polynomialVector[i]:lowerLimitScale[i];
-
         }
         return polynomialVector;
     }
@@ -156,4 +156,11 @@ public class Modelo {
         }
     }
 
+    public void setLowerLimitScale(BigDecimal[] lowerLimitScale) {
+        this.lowerLimitScale = lowerLimitScale;
+    }
+
+    public void setUpperLimitScale(BigDecimal[] upperLimitScale) {
+        this.upperLimitScale = upperLimitScale;
+    }
 }
