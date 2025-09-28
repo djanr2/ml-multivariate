@@ -56,9 +56,9 @@ public class Matrix {
         };
 
         BigDecimal[][] m = Matrix.transponer(matriz);
-        printMatrix(matriz);
+        print(matriz);
         System.out.println();
-        printMatrix(m);
+        print(m);
 
     }
     public static void main2(String[] args) {
@@ -99,7 +99,7 @@ public class Matrix {
         BigDecimal[][] inverse = inverter.invertMatrix(matrix);
 
         System.out.println("\nFinal Inverse Matrix:");
-        inverter.printMatrix(inverse);
+        inverter.print(inverse);
 
         BigDecimal[][] cofactor = {
                 {new BigDecimal(1), new BigDecimal(2), new BigDecimal(3), new BigDecimal(3)},
@@ -246,13 +246,14 @@ public class Matrix {
         }
     }
 
-    public static void printMatrix(BigDecimal[][] matrix) {
+    public static void print(BigDecimal[][] matrix) {
         for (BigDecimal[] row : matrix) {
             for (BigDecimal val : row) {
                 System.out.print(val+" ");
             }
             System.out.println();
         }
+        System.out.println();
     }
 
     public static BigDecimal getCofactor(int row, int column, BigDecimal[][] matrix) {

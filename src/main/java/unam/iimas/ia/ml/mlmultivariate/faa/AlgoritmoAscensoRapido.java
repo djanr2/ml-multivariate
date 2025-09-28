@@ -46,18 +46,28 @@ public class AlgoritmoAscensoRapido {
         List<BigDecimal[]> p = mapToPolynomial(e, m);
         List<BigDecimal[]> s = stabilizeVectors(p, m);
         List<Vector> epsilonPhi = mapToVectors(s, m);
+        //printVectores(epsilonPhi);
         //List<Vector> epsilonTethas   = getOrderVectorsToEvaluate(epsilonPhi);
         //List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
 
         //int[] customVectors = {19, 15, 14, 5};
-        //int[] customVectors = {2, 3, 23, 18};
-        int[] customVectors = {7, 11, 23, 18};
+       // int[] customVectors = {2, 23,3, 18};
+        //int[] customVectors = {7, 11, 23, 18};
+        int[] customVectors = {6, 1, 7, 9};
         List<Vector> epsilonTetha = getCustomVectorsToEvaluate(epsilonPhi, customVectors);
         List<Vector> minMaxEquation = getMinMaxSigns(epsilonTetha, m);
         MatrixObject matrixA = new MatrixObject(minMaxEquation);
         BigDecimal[][] b = Matrix.invertMatrix(matrixA.getMatrix());
+
         //--------------------loop
         while (true){
+            System.out.println("-------------------------------------");
+
+            minMaxEquation = getMinMaxSigns(epsilonTetha, m);
+            matrixA = new MatrixObject(minMaxEquation);
+            System.out.println("Los signos correctos" );
+            Matrix.print(matrixA.getMatrix());
+
             BigDecimal[][] c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
             m.setSolutionCoeficientes(c);
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
@@ -67,19 +77,25 @@ public class AlgoritmoAscensoRapido {
             }
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
 
-            BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0), epsilonPhiVector.getSign());
+            BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
+            System.out.print("lmd: ");
+            Matrix.print(lamdas);
+            System.out.print("row: ");
+            Matrix.print(Matrix.getMatrixRow(b, 0));
+            System.out.print("Betas: ");
+            Matrix.print(betas);
 
             int indexBeta = getMaxBetaIndex(betas);
 
             swapVector(epsilonTetha, epsilonPhi, epsilonTetha.get(indexBeta), epsilonPhiVector);
 
             b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(), b, indexBeta);
+            System.out.println("Los signos obtenidos");
+            Matrix.print(Matrix.invertMatrix(b));
             minMaxEquation = getMinMaxSigns(epsilonTetha, m);
-            matrixA = new MatrixObject(minMaxEquation);
-
-
+            Matrix.print(b);
             try {
-                Thread.sleep(10000);
+                Thread.sleep(5000);
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -108,7 +124,7 @@ public class AlgoritmoAscensoRapido {
     }
 
     public void swapVector( List<Vector> epsilonTheta,List<Vector> epsilonPhi, Vector epsilonThetaVector, Vector epsilonPhiVector){
-        System.out.println("swap: {"+ epsilonThetaVector +" <-> " + epsilonPhiVector + "}");
+        System.out.println(" swap: {["+epsilonThetaVector.getIndexEpsilonTheta()+"] "+ epsilonThetaVector +"    \n       " + epsilonPhiVector + "}");
         epsilonPhi.remove(epsilonPhiVector.setIndexEpsilonTheta(epsilonThetaVector.getIndexEpsilonTheta()));
         epsilonPhi.add(epsilonThetaVector);
         epsilonTheta.set(epsilonThetaVector.getIndexEpsilonTheta(),epsilonPhiVector);
@@ -139,6 +155,7 @@ public class AlgoritmoAscensoRapido {
 
     private BigDecimal[][] getBetas(BigDecimal[][] lamdas, BigDecimal[][] errorRow, int sign){
         BigDecimal[][] betas = new BigDecimal[1][lamdas[0].length];
+        System.out.println("Sign: "+ sign);
         for (int i = 0; i < lamdas[0].length; i++) {
             betas[0][i] = lamdas[0][i].multiply(new BigDecimal(sign)).
                     divide(errorRow[0][i], PRECISION, ROUNDING_MODE);
@@ -149,8 +166,8 @@ public class AlgoritmoAscensoRapido {
         int k=0;
         BigDecimal maxLamda = BigDecimal.ZERO;
         for (int i = 0; i < betas[0].length; i++) {
-            if(maxLamda.compareTo(betas[0][i]/*.abs()*/)<0){
-                maxLamda = betas[0][i]/*.abs()*/;
+            if(maxLamda.compareTo(betas[0][i].abs())<0){
+                maxLamda = betas[0][i].abs();
                 k=i;
             }
         }
