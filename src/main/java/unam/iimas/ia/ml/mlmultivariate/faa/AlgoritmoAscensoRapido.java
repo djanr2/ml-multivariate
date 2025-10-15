@@ -1,5 +1,6 @@
 package unam.iimas.ia.ml.mlmultivariate.faa;
 
+import com.fasterxml.jackson.core.JsonToken;
 import unam.iimas.ia.ml.mlmultivariate.file.LoadFile;
 import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
 import unam.iimas.ia.ml.mlmultivariate.matrix.MatrixObject;
@@ -21,85 +22,79 @@ public class AlgoritmoAscensoRapido {
     private static final int PRECISION = Precision.MIN_PRECISION;
     private static final int RHO = Precision.RHO;
     private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
+    private static final int MIN_ERROR_EXPECTED = 1;
+    private static Modelo m;
+    private static int seed = 19;
+    private static Random random = new Random(seed);
+    Scanner sc = new Scanner(System.in);
+
 
     //file is filled on constructor AlgoritmoAscensoRapido
     private final LoadFile file;
 
     public AlgoritmoAscensoRapido(){
-        this.file = new LoadFile();
+        this.file = new LoadFile("perfectfit");
     }
 
     public static void main(String[] args) {
         //Aqui se carga el archivo.
         AlgoritmoAscensoRapido aaf = new AlgoritmoAscensoRapido();
-        aaf.run(aaf);
+        BigDecimal[][] c = aaf.run(aaf);
+        System.out.println(m);
     }
 
-    public void run(AlgoritmoAscensoRapido aaf) {
-
-        Modelo m = Modelo.getCustomModel();
+    public BigDecimal[][] run(AlgoritmoAscensoRapido aaf) {
+        BigDecimal[][] c;
+        m = Modelo.getCustomModel();
 
         List<BigDecimal[]> d = aaf.getFile().getVectores();
-        m.setLowerLimitScale(aaf.getFile().getLowerLimitScale());
-        m.setUpperLimitScale(aaf.getFile().getUpperLimitScale());
-        List<BigDecimal[]> e = scaleVectorsZeroToOne(d,m);
-        List<BigDecimal[]> p = mapToPolynomial(e, m);
+        //print(d);
+        //m.setLowerLimitScale(aaf.getFile().getLowerLimitScale());
+        //m.setUpperLimitScale(aaf.getFile().getUpperLimitScale());
+        //d = stabilizeVectors(d, m);
+        //List<BigDecimal[]> e = scaleVectorsZeroToOne(d,m);
+        List<BigDecimal[]> p = mapToPolynomial(d, m);
+
         List<BigDecimal[]> s = stabilizeVectors(p, m);
         List<Vector> epsilonPhi = mapToVectors(s, m);
         //printVectores(epsilonPhi);
-        //List<Vector> epsilonTethas   = getOrderVectorsToEvaluate(epsilonPhi);
-        //List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
+        //List<Vector> epsilonTetha   = getOrderVectorsToEvaluate(epsilonPhi);
+        List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
 
         //int[] customVectors = {19, 15, 14, 5};
-       // int[] customVectors = {2, 23,3, 18};
+        //int[] customVectors = {2, 23,3, 18};
         //int[] customVectors = {7, 11, 23, 18};
-        int[] customVectors = {6, 1, 7, 9};
-        List<Vector> epsilonTetha = getCustomVectorsToEvaluate(epsilonPhi, customVectors);
+        //int[] customVectors = {6, 1, 7, 9};
+        //List<Vector> epsilonTetha = getCustomVectorsToEvaluate(epsilonPhi, customVectors);
         List<Vector> minMaxEquation = getMinMaxSigns(epsilonTetha, m);
+
         MatrixObject matrixA = new MatrixObject(minMaxEquation);
         BigDecimal[][] b = Matrix.invertMatrix(matrixA.getMatrix());
-
+        //printVectores(epsilonTetha);
+        //printVectores(epsilonPhi);
         //--------------------loop
+        //System.out.println("-------------------------------------");
+        //TODO Modificar esta parte del codigo para no volver a generar
+        // el Matrix Object. Y solo obtener el vector solucion derivado del sqap
+        minMaxEquation = getMinMaxSigns2(epsilonTetha, m);
+
+        matrixA = new MatrixObject(minMaxEquation);
         while (true){
-            System.out.println("-------------------------------------");
-
-            minMaxEquation = getMinMaxSigns(epsilonTetha, m);
-            matrixA = new MatrixObject(minMaxEquation);
-            System.out.println("Los signos correctos" );
-            Matrix.print(matrixA.getMatrix());
-
-            BigDecimal[][] c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
+            c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
             m.setSolutionCoeficientes(c);
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
-            System.out.println("eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError());
+            //System.out.println("eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError());
             if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0){
                 break;
             }
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
-
             BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
-            System.out.print("lmd: ");
-            Matrix.print(lamdas);
-            System.out.print("row: ");
-            Matrix.print(Matrix.getMatrixRow(b, 0));
-            System.out.print("Betas: ");
-            Matrix.print(betas);
-
-            int indexBeta = getMaxBetaIndex(betas);
-
+            int indexBeta = getBetaIndex(betas);
             swapVector(epsilonTetha, epsilonPhi, epsilonTetha.get(indexBeta), epsilonPhiVector);
-
             b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(), b, indexBeta);
-            System.out.println("Los signos obtenidos");
-            Matrix.print(Matrix.invertMatrix(b));
-            minMaxEquation = getMinMaxSigns(epsilonTetha, m);
-            Matrix.print(b);
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
         }
+
+        return c;
     }
 
     private BigDecimal[][] getInverseFromLamda(BigDecimal[][] epsilonPhi, BigDecimal[][] b, int indexBeta){
@@ -124,7 +119,8 @@ public class AlgoritmoAscensoRapido {
     }
 
     public void swapVector( List<Vector> epsilonTheta,List<Vector> epsilonPhi, Vector epsilonThetaVector, Vector epsilonPhiVector){
-        System.out.println(" swap: {["+epsilonThetaVector.getIndexEpsilonTheta()+"] "+ epsilonThetaVector +"    \n       " + epsilonPhiVector + "}");
+        //System.out.println(" swap: {["+epsilonThetaVector.getIndexEpsilonTheta()+"] "+ epsilonThetaVector +"    \n       " + epsilonPhiVector + "}");
+        //System.out.println("["+epsilonThetaVector.getIndexEpsilonTheta()+"]");
         epsilonPhi.remove(epsilonPhiVector.setIndexEpsilonTheta(epsilonThetaVector.getIndexEpsilonTheta()));
         epsilonPhi.add(epsilonThetaVector);
         epsilonTheta.set(epsilonThetaVector.getIndexEpsilonTheta(),epsilonPhiVector);
@@ -140,7 +136,12 @@ public class AlgoritmoAscensoRapido {
                 epsilonPhi ) {
             epsilonPhi_.add(v.evaluate());
         }
-        //System.out.println(epsilonPhi_.peek());
+        /*
+        while (!epsilonPhi_.isEmpty()) {
+            System.out.println(epsilonPhi_.poll());
+        }
+        System.out.println(epsilonPhi_.peek());
+        */
         return epsilonPhi_.peek();
     }
 
@@ -155,19 +156,19 @@ public class AlgoritmoAscensoRapido {
 
     private BigDecimal[][] getBetas(BigDecimal[][] lamdas, BigDecimal[][] errorRow, int sign){
         BigDecimal[][] betas = new BigDecimal[1][lamdas[0].length];
-        System.out.println("Sign: "+ sign);
+        //System.out.println("Sign: "+ sign);
         for (int i = 0; i < lamdas[0].length; i++) {
             betas[0][i] = lamdas[0][i].multiply(new BigDecimal(sign)).
                     divide(errorRow[0][i], PRECISION, ROUNDING_MODE);
         }
         return betas;
     }
-    private int getMaxBetaIndex(BigDecimal[][] betas){
-        int k=0;
-        BigDecimal maxLamda = BigDecimal.ZERO;
+    private int getBetaIndex(BigDecimal[][] betas){
+        int k=-1;
+        BigDecimal maxLamda = betas[0][0];
         for (int i = 0; i < betas[0].length; i++) {
-            if(maxLamda.compareTo(betas[0][i].abs())<0){
-                maxLamda = betas[0][i].abs();
+            if(maxLamda.compareTo(betas[0][i])<=0){
+                maxLamda = betas[0][i];
                 k=i;
             }
         }
@@ -219,13 +220,13 @@ public class AlgoritmoAscensoRapido {
     }
 
     private static BigDecimal getNoise(){
-        Random random = new Random();
-        int mult = (random.nextBoolean())?1:-1;
-        return BigDecimal.valueOf(random.nextDouble()*mult).
+        //int mult = (random.nextBoolean())?1:-1;
+        return BigDecimal.valueOf(random.nextDouble()).
                 multiply(new BigDecimal("1e-"+(RHO)));
     }
 
     private  static  List<BigDecimal[]> mapToPolynomial(List<BigDecimal[]> vectors, Modelo modelo){
+        modelo.eraseLimits();
         List<BigDecimal[]> vectorsToPolynomial = new ArrayList<>();
         for (BigDecimal[] vector:
         vectors) {
@@ -254,7 +255,6 @@ public class AlgoritmoAscensoRapido {
 
     public List<Vector> getRandomVectorsToEvaluate(List<Vector> vectores){
         List<Vector> vectoresRandom =new ArrayList<>();
-        Random random = new Random();
         int index=0;
         int i =0;
         while (vectoresRandom.size()!=vectores.get(0).getVector().length){
@@ -363,37 +363,31 @@ public class AlgoritmoAscensoRapido {
         System.arraycopy(epsilonTetha.get(epsilonTetha.size()-1).getVector(), 0, v_,
                 1, epsilonTetha.get(epsilonTetha.size()-1).getVector().length);
         minMaxEquation.add(new Vector(epsilonTetha.size()-1, m, v_));
-
         return minMaxEquation;
     }
-    private void codeToSave(){
-          /*
-        PriorityQueue<Vector> epsilonTetha_ = new PriorityQueue<>();
-        PriorityQueue<Vector> epsilonPhi_ = new PriorityQueue<>();
 
-        for (Vector v:
-                epsilonTetha ) {
-            epsilonTetha_.add(v.evaluate());
+    private List<Vector> getMinMaxSigns2(List<Vector> epsilonTetha, Modelo m){
+        List<Vector> minMaxEquation = new ArrayList<>();
+        BigDecimal[][] determinante = Matrix.getLeftDeterminant(epsilonTetha);
+        BigDecimal[][] cofactores = getCofactors(determinante);
+        BigDecimal[] v_;
+        for (int i = 0; i < cofactores.length; i++) {
+            int sign = cofactores[i][0].signum();
+            v_ = new BigDecimal[epsilonTetha.get(0).getVector().length+1];;
+            v_[0] = BigDecimal.ONE.multiply(new BigDecimal(sign));
+            System.arraycopy(epsilonTetha.get(i).getVector(), 0, v_,
+                    1, epsilonTetha.get(i).getVector().length);
+            minMaxEquation.add(new Vector(i, m, v_));
         }
-        for (Vector v:
-                epsilonPhi ) {
-            epsilonPhi_.add(v.evaluate());
+        return minMaxEquation;
+    }
+
+    private BigDecimal[][] getCofactors(BigDecimal[][] m){
+        BigDecimal[][] mxm = Matrix.addFirstColumnONES(m);
+        BigDecimal[][] cofactors = new BigDecimal[m.length][1];
+        for (int i = 0; i < m.length ; i++) {
+            cofactors[i][0] = Matrix.getCofactor(i, 0, mxm);
         }
-
-        BigDecimal internalErrorEpsilonTetha = epsilonTetha_.peek().getError();
-        BigDecimal externalErrorEpsilonPhi = epsilonPhi_.peek().getError();
-
-
-        System.out.println();
-
-        while (!epsilonPhi_.isEmpty()) {
-            System.out.println(epsilonPhi_.poll());
-        }
-
-        for (Vector v:
-                epsilonPhi_) {
-            System.out.println(v);
-        }
-         */
+        return cofactors;
     }
 }

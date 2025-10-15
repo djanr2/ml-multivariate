@@ -135,8 +135,16 @@ public class Modelo {
         Termino[]  terminos2 = {new Termino(new int[]{1, 0, 0, 0, 1})
                 ,new Termino(new int[]{0, 1, 0, 1, 0})
                 ,new Termino(new int[]{0, 0, 1, 0, 0})};
-
-        return new Modelo(terminos2);
+        Termino[]  terminos3 = {
+                new Termino(new int[]{0, 0}),
+                new Termino(new int[]{0, 1}),
+                new Termino(new int[]{0, 2}),
+                new Termino(new int[]{1, 0}),
+                new Termino(new int[]{1, 1}),
+                new Termino(new int[]{2, 0}),
+                new Termino(new int[]{2, 1}),
+                new Termino(new int[]{2, 2})};
+        return new Modelo(terminos3);
     }
 
     public void eraseLimits(){

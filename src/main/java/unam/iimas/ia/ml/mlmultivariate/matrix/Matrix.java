@@ -16,7 +16,7 @@ public class Matrix {
     private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
 
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         BigDecimal[][] matriz = {
                 {
                         new BigDecimal("-0.486313"), new BigDecimal("-0.972626"), new BigDecimal("1.458939"),
@@ -61,7 +61,7 @@ public class Matrix {
         print(m);
 
     }
-    public static void main2(String[] args) {
+    public static void main(String[] args) {
         BigDecimal[][] a = {
                 {new BigDecimal(1), new BigDecimal(1), new BigDecimal(1), new BigDecimal(1)},
                 {new BigDecimal(1), new BigDecimal(3), new BigDecimal(9), new BigDecimal(27)},
@@ -119,7 +119,7 @@ public class Matrix {
 
         System.out.println("Cofactor");
 
-        BigDecimal c= getCofactor(3,0, cofactor2);
+        BigDecimal c= getCofactor(0,0, cofactor);
 
         System.out.println(c);
 
@@ -413,6 +413,19 @@ public class Matrix {
             v_[i]= Arrays.copyOf( matrix.get(i).getVector(),matrix.get(i).getVector().length - 1);
         }
         return v_;
+    }
+
+    public static BigDecimal[][] addFirstColumnONES(BigDecimal[][] matriz) {
+        int filas = matriz.length;
+        int columnas = matriz[0].length;
+        BigDecimal[][] nuevaMatriz = new BigDecimal[filas][columnas + 1];
+        for (int i = 0; i < filas; i++) {
+            nuevaMatriz[i][0] = BigDecimal.ONE;
+            for (int j = 0; j < columnas; j++) {
+                nuevaMatriz[i][j + 1] = matriz[i][j];
+            }
+        }
+        return nuevaMatriz;
     }
 
 

@@ -35,7 +35,8 @@ public class Vector implements Comparable<Vector>{
         for (int i = 0; i < modelo.getTerminos().length; i++) {
             value = value.add(vector[i].multiply(modelo.getTerminos()[i].getCoeficiente()));
         }
-        error =  (value.subtract(vector[vector.length-1]));
+        value = value.setScale(PRECISION, ROUNDING_MODE);
+        error =  (vector[vector.length-1].subtract(value));
         sign = (error.signum() < 0)?-1:1;
         error = error.abs().setScale(PRECISION, ROUNDING_MODE);
         return this;
@@ -81,9 +82,9 @@ public class Vector implements Comparable<Vector>{
         BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
         int sign_ = 0;
         if(sign > 0){
-            sign_ = -1;
-        }else{
             sign_ = 1;
+        }else{
+            sign_ = -1;
         }
         //minMax[0][0] = error.multiply(new BigDecimal(sign));
         minMax[0][0] = BigDecimal.ONE.multiply(new BigDecimal(sign_));
