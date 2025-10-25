@@ -1,11 +1,9 @@
 package unam.iimas.ia.ml.mlmultivariate.matrix;
 
-
 import unam.iimas.ia.ml.mlmultivariate.model.Precision;
 import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
@@ -14,8 +12,6 @@ public class Matrix {
 
     private static final int PRECISION = Precision.MIN_PRECISION;
     private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
-
-
     public static void main2(String[] args) {
         BigDecimal[][] matriz = {
                 {
@@ -61,7 +57,7 @@ public class Matrix {
         print(m);
 
     }
-    public static void main(String[] args) {
+    public static void main3(String[] args) {
         BigDecimal[][] a = {
                 {new BigDecimal(1), new BigDecimal(1), new BigDecimal(1), new BigDecimal(1)},
                 {new BigDecimal(1), new BigDecimal(3), new BigDecimal(9), new BigDecimal(27)},
@@ -125,28 +121,31 @@ public class Matrix {
 
     }
 
-    public static BigDecimal[][] gaussianElimination(BigDecimal[][] A, BigDecimal[][] b) {
-        int n = b.length;
+    public static BigDecimal[][] gaussianElimination(BigDecimal[][] a, BigDecimal[][] b) {
+        // Copias defensivas (para no alterar los originales)
+        BigDecimal[][] aCopy = cloneMatrix(a);
+        BigDecimal[][] bCopy = cloneMatrix(b);
+        int n = bCopy.length;
 
         for (int pivot = 0; pivot < n; pivot++) {
-            BigDecimal pivotVal = A[pivot][pivot];
+            BigDecimal pivotVal = aCopy[pivot][pivot];
             for (int j = pivot; j < n; j++) {
-                A[pivot][j] = A[pivot][j].divide(pivotVal, PRECISION, ROUNDING_MODE);
+                aCopy[pivot][j] = aCopy[pivot][j].divide(pivotVal, PRECISION, ROUNDING_MODE);
             }
-            b[pivot][0] =  b[pivot][0].divide(pivotVal, PRECISION, ROUNDING_MODE);
+            bCopy[pivot][0] =  bCopy[pivot][0].divide(pivotVal, PRECISION, ROUNDING_MODE);
             for (int i = pivot + 1; i < n; i++) {
-                BigDecimal factor = A[i][pivot];
+                BigDecimal factor = aCopy[i][pivot];
                 for (int j = pivot; j < n; j++) {
-                    A[i][j] = A[i][j].subtract(factor.multiply(A[pivot][j]));
+                    aCopy[i][j] = aCopy[i][j].subtract(factor.multiply(aCopy[pivot][j]));
                 }
-                b[i][0] = b[i][0].subtract(factor.multiply(b[pivot][0]));
+                bCopy[i][0] = bCopy[i][0].subtract(factor.multiply(bCopy[pivot][0]));
             }
         }
         BigDecimal[][] x = new BigDecimal[n][1];
         for (int i = n - 1; i >= 0; i--) {
-            x[i][0] = b[i][0];
+            x[i][0] = bCopy[i][0];
             for (int j = i + 1; j < n; j++) {
-                x[i][0] = x[i][0].subtract(A[i][j].multiply(x[j][0])).setScale(PRECISION, ROUNDING_MODE);
+                x[i][0] = x[i][0].subtract(aCopy[i][j].multiply(x[j][0])).setScale(PRECISION, ROUNDING_MODE);
             }
         }
         return x;
@@ -169,8 +168,6 @@ public class Matrix {
         }
         return gaussianElimination(A, b);
     }
-
-
 
     public static BigDecimal[][] getGaussiaSolution(MatrixObject matrix){
         return gaussianElimination(matrix.getMatrix(), matrix.getVectorSolution());
@@ -415,14 +412,14 @@ public class Matrix {
         return v_;
     }
 
-    public static BigDecimal[][] addFirstColumnONES(BigDecimal[][] matriz) {
-        int filas = matriz.length;
-        int columnas = matriz[0].length;
+    public static BigDecimal[][] addFirstColumnONES(BigDecimal[][] matrix) {
+        int filas = matrix.length;
+        int columnas = matrix[0].length;
         BigDecimal[][] nuevaMatriz = new BigDecimal[filas][columnas + 1];
         for (int i = 0; i < filas; i++) {
             nuevaMatriz[i][0] = BigDecimal.ONE;
             for (int j = 0; j < columnas; j++) {
-                nuevaMatriz[i][j + 1] = matriz[i][j];
+                nuevaMatriz[i][j + 1] = matrix[i][j];
             }
         }
         return nuevaMatriz;
@@ -443,8 +440,5 @@ public class Matrix {
         }
         return copy;
     }
-
-
-
 
 }

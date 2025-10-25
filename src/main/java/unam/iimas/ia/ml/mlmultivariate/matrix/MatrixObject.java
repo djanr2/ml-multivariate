@@ -26,11 +26,11 @@ public class MatrixObject {
     }
 
     public BigDecimal[][] getMatrix() {
-        return matrix;
+        return this.matrix;
     }
 
     public BigDecimal[][] getVectorSolution() {
-        return vectorSolution;
+        return this.vectorSolution;
     }
 
 }
