@@ -107,6 +107,21 @@ public class Vector implements Comparable<Vector>{
         return this.index+" "+Arrays.toString(this.vector)+ " = " +sign_+ error;
     }
 
+    public String getStringToCalculate(){
+
+        String output = "";
+        BigDecimal result = BigDecimal.ZERO;
+        for (int i = 0; i < this.modelo.getTerminos().length; i++) {
+            int sign_int = this.modelo.getTerminos()[i].getCoeficiente().signum();
+            String sign = (sign_int>0)?"+":"-";
+            output+=sign + "("+this.modelo.getTerminos()[i].getCoeficiente().abs() + "*" + this.vector[i]+")";
+            result = result.add(this.modelo.getTerminos()[i].getCoeficiente().multiply(this.vector[i]));
+        }
+        String signRes= (result.signum()>0)?"-":"+";// se cambia el signo al imprimir porque es una resta
+        return output+ " = "+ this.vector[vector.length-1] + signRes +result.abs().setScale(PRECISION, ROUNDING_MODE)
+                + " : "+this.vector[vector.length-1].subtract(result).setScale(PRECISION, ROUNDING_MODE);
+    }
+
     @Override
     public int compareTo(Vector o) {
         return (o.error.compareTo(this.error) == 1)? 1: -1;

@@ -21,10 +21,11 @@ public class AlgoritmoAscensoRapido {
     private static final int MIN_ERROR_EXPECTED = 1;
     private Modelo m;
     private static int seed = 19;
-    private static Random random = new Random(seed);
+    private static Random random = new Random();
     private final Set<Set<Integer>> swaps = new HashSet<>();
-    private BigDecimal bestEpsilonTheta = BigDecimal.ZERO;
-    private BigDecimal bestEpsilonPhi = BigDecimal.ONE;
+    private BigDecimal[][] bestCoeficients;
+    private BigDecimal bestEpsilonThetaDIVEpsilonPhi= BigDecimal.ZERO;
+
 
     Scanner sc = new Scanner(System.in);
 
@@ -44,46 +45,52 @@ public class AlgoritmoAscensoRapido {
     }
 
     public BigDecimal[][] run(AlgoritmoAscensoRapido aaf) {
-        BigDecimal[][] c;
-        m = Modelo.getCustomModel();
+
+        this.m = Modelo.getCustomModel();
 
         List<BigDecimal[]> d = aaf.getFile().getVectores();
-        m.setLowerLimitScale(aaf.getFile().getLowerLimitScale());
-        m.setUpperLimitScale(aaf.getFile().getUpperLimitScale());
-        List<BigDecimal[]> e = scaleVectorsZeroToOne(d,m);
-        List<BigDecimal[]> p = mapToPolynomial(e, m);
-
-        List<BigDecimal[]> s = stabilizeVectors(p, m);
-        List<Vector> epsilonPhi = mapToVectors(s, m);
+        this.m.setLowerLimitScale(aaf.getFile().getLowerLimitScale());
+        this.m.setUpperLimitScale(aaf.getFile().getUpperLimitScale());
+        List<BigDecimal[]> e = scaleVectorsZeroToOne(d,this.m);
+        List<BigDecimal[]> p = mapToPolynomial(e, this.m);
+        List<BigDecimal[]> s = stabilizeVectors(p, this.m);
+        List<Vector> epsilonPhi = mapToVectors(s, this.m);
         List<Vector> epsilonTetha   = getRandomVectorsToEvaluate(epsilonPhi);
-        List<Vector> minMaxEquation = getMinMaxSigns(epsilonTetha, m);
+        List<Vector> minMaxEquation = getMinMaxSigns(epsilonTetha, this.m);
 
         MatrixObject matrixA = new MatrixObject(minMaxEquation);
         BigDecimal[][] b = Matrix.invertMatrix(matrixA.getMatrix());
 
         //TODO Modificar esta parte del codigo para no volver a generar
         // el Matrix Object. Y solo obtener el vector solucion derivado del sqap
-        minMaxEquation = getMinMaxSigns2(epsilonTetha, m);
+        minMaxEquation = getMinMaxSigns2(epsilonTetha, this.m);
 
         matrixA = new MatrixObject(minMaxEquation);
         while (true){
-            c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
-            m.setSolutionCoeficientes(c);
+            BigDecimal[][] c = getCoeficientsAndEpsilonTetha(b, matrixA.getVectorSolution());
+            this.m.setSolutionCoeficientes(c);
+
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
-            System.out.println("eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError());
-            if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0){
-                break;
+            BigDecimal currentETDivEP = c[0][0].abs().divide(epsilonPhiVector.getError(), PRECISION, ROUNDING_MODE);
+            if(currentETDivEP.compareTo(bestEpsilonThetaDIVEpsilonPhi)>=0){
+                bestEpsilonThetaDIVEpsilonPhi = currentETDivEP;
+                saveBestCoeficients(c);
             }
+            //System.out.println("eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " div: "+ currentETDivEP);
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
             BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
             int indexBeta = getBetaIndex(betas);
-            if(wasSwapped(epsilonTetha.get(indexBeta),epsilonPhiVector)){
+            if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0
+              ||wasSwapped(epsilonTetha, epsilonTetha.get(indexBeta),epsilonPhiVector)){
                 break;
             }
             swapVector(epsilonTetha, epsilonPhi, epsilonTetha.get(indexBeta), epsilonPhiVector);
             b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(), b, indexBeta);
         }
-        return c;
+        m.setSolutionCoeficientes(getBestCoeficients());
+        Vector v = epsilonTetha.get(0);
+        v.evaluate();
+        return getBestCoeficients();
     }
 
     private BigDecimal[][] getInverseFromLamda(BigDecimal[][] epsilonPhi, BigDecimal[][] b, int indexBeta){
@@ -110,22 +117,32 @@ public class AlgoritmoAscensoRapido {
     public void swapVector( List<Vector> epsilonTheta,List<Vector> epsilonPhi, Vector epsilonThetaVector, Vector epsilonPhiVector){
         //System.out.println(" swap: {["+epsilonThetaVector.getIndexEpsilonTheta()+"] "+ epsilonThetaVector +"    \n       " + epsilonPhiVector + "}");
         //System.out.println("["+epsilonThetaVector.getIndex()+"]<->["+epsilonPhiVector.getIndex()+"]");
-        // Track the swap by ID (unordered)
-
         epsilonPhi.remove(epsilonPhiVector.setIndexEpsilonTheta(epsilonThetaVector.getIndexEpsilonTheta()));
         epsilonPhi.add(epsilonThetaVector);
         epsilonTheta.set(epsilonThetaVector.getIndexEpsilonTheta(),epsilonPhiVector);
 
-        Set<Integer> swapPair = new HashSet<>(Arrays.asList(
-                epsilonThetaVector.getIndex(),
-                epsilonPhiVector.getIndex()
-        ));
+        List<Integer> idVectoresEpsilonTheta = new ArrayList<>();
 
+        for (Vector v:
+             epsilonTheta) {
+            idVectoresEpsilonTheta.add(v.getIndex());
+        }
+        idVectoresEpsilonTheta.add(epsilonThetaVector.getIndex());
+        idVectoresEpsilonTheta.add(epsilonPhiVector.getIndex());
+        Set<Integer> swapPair = new HashSet<>(idVectoresEpsilonTheta);
         swaps.add(swapPair);
     }
 
-    public boolean wasSwapped(Vector v1, Vector v2) {
-        Set<Integer> pair = new HashSet<>(Arrays.asList(v1.getIndex(), v2.getIndex()));
+    public boolean wasSwapped(List<Vector> epsilonTheta, Vector v1, Vector v2) {
+        List<Integer> idVectoresEpsilonTheta = new ArrayList<>();
+        for (Vector v:
+                epsilonTheta) {
+            idVectoresEpsilonTheta.add(v.getIndex());
+        }
+        idVectoresEpsilonTheta.add(v1.getIndex());
+        idVectoresEpsilonTheta.add(v2.getIndex());
+
+        Set<Integer> pair = new HashSet<>(idVectoresEpsilonTheta);
         return swaps.contains(pair);
     }
 
@@ -400,6 +417,14 @@ public class AlgoritmoAscensoRapido {
     }
 
     public Modelo getM() {
-        return m;
+        return this.m;
+    }
+
+    public void saveBestCoeficients(BigDecimal[][] coeficients){
+        this.bestCoeficients = coeficients;
+    }
+
+    public BigDecimal[][] getBestCoeficients() {
+        return bestCoeficients;
     }
 }

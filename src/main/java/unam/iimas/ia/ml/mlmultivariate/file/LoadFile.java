@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LoadFile {
@@ -63,22 +64,23 @@ public class LoadFile {
             if (this.lowerLimitScale == null && this.upperLimitScale== null){
                 this.lowerLimitScale = new BigDecimal[valoresFromDataVector.length];
                 this.upperLimitScale = new BigDecimal[valoresFromDataVector.length];
+
+            }
+            if(this.lowerLimitScale[i] == null ){
+                this.lowerLimitScale[i] = vector[i];
             }else {
-                if(this.lowerLimitScale[i] == null ){
+                if( this.lowerLimitScale[i].compareTo(vector[i]) >=0){
                     this.lowerLimitScale[i] = vector[i];
-                }else {
-                    if( this.lowerLimitScale[i].compareTo(vector[i]) > 0){
-                        this.lowerLimitScale[i] = vector[i];
-                    }
-                }
-                if(this.upperLimitScale[i] == null ){
-                    this.upperLimitScale[i] = vector[i];
-                }else {
-                    if( this.upperLimitScale[i].compareTo(vector[i]) < 0){
-                        this.upperLimitScale[i] = vector[i];
-                    }
                 }
             }
+            if(this.upperLimitScale[i] == null ){
+                this.upperLimitScale[i] = vector[i];
+            }else {
+                if( this.upperLimitScale[i].compareTo(vector[i]) < 0){
+                    this.upperLimitScale[i] = vector[i];
+                }
+            }
+
         }
         return vector;
     }
