@@ -428,5 +428,23 @@ public class Matrix {
         return nuevaMatriz;
     }
 
+    public static BigDecimal[][] cloneMatrix(BigDecimal[][] a) {
+        if (a == null) return null;
+        BigDecimal[][] copy = new BigDecimal[a.length][];
+        for (int i = 0; i < a.length; i++) {
+            BigDecimal[] row = a[i];
+            if (row == null) {
+                copy[i] = null;
+            } else {
+                // BigDecimal es inmutable: copiar referencias de celdas es seguro
+                copy[i] = new BigDecimal[row.length];
+                System.arraycopy(row, 0, copy[i], 0, row.length);
+            }
+        }
+        return copy;
+    }
+
+
+
 
 }
