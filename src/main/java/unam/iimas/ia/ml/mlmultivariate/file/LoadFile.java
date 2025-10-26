@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class LoadFile {
@@ -16,16 +15,15 @@ public class LoadFile {
     private static final String PREFIX_VARIABLE_NAME = "X";
     private static final int VARIABLE_NUMBER_DIGITS = 2;
     private static final char CHAR_LEFT_PADDING = '0';
-    private int numeroVariables;
-    private List<BigDecimal[]> vectores;
-    private File file;
-    private BufferedReader br;
+    private boolean fileHasHeaders = false;
+    private boolean variableNamesFullfilled = false;
+    private final File file;
+    private final BufferedReader br;
     private BigDecimal[] lowerLimitScale;
     private BigDecimal[] upperLimitScale;
+    private final List<BigDecimal[]> vectores;
     private String[] variableNames;
-
-    private static boolean fileHasHeaders = false;
-    private static boolean variableNamesFullfilled = false;
+    private int numeroVariables;
 
     public LoadFile() {
         this(FILE_DEFAULT);
@@ -64,7 +62,6 @@ public class LoadFile {
             if (this.lowerLimitScale == null && this.upperLimitScale== null){
                 this.lowerLimitScale = new BigDecimal[valoresFromDataVector.length];
                 this.upperLimitScale = new BigDecimal[valoresFromDataVector.length];
-
             }
             if(this.lowerLimitScale[i] == null ){
                 this.lowerLimitScale[i] = vector[i];

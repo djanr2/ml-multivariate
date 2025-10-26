@@ -1,7 +1,6 @@
 package unam.iimas.ia.ml.mlmultivariate.model;
 
 import java.math.BigDecimal;
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -10,8 +9,11 @@ public class Modelo {
 
     private Long id;
     private Termino[] terminos;
-    private BigDecimal[] lowerLimitScale;
-    private BigDecimal[] upperLimitScale;
+    private BigDecimal[] originalLowerLimitScale;
+    private BigDecimal[] originalUpperLimitScale;
+    private BigDecimal[] polynomialLowerLimitScale;
+    private BigDecimal[] polynomialUpperLimitScale;
+
     private final int l;
 
 
@@ -59,6 +61,12 @@ public class Modelo {
     }
 
     public BigDecimal[] getPolynomialVector(BigDecimal[] vectorOriginal){
+        if(polynomialUpperLimitScale == null){
+            polynomialUpperLimitScale = new BigDecimal[this.getTerminos().length+1];
+        }
+        if(polynomialLowerLimitScale == null){
+            polynomialLowerLimitScale = new BigDecimal[this.getTerminos().length+1];
+        }
         BigDecimal[] polynomialVector = new BigDecimal[this.getTerminos().length+1];
         // Se agrega la variable dependiente
         // Es decir no se modifica el valor de el ultimo termino que esta como variable independiete
@@ -70,58 +78,42 @@ public class Modelo {
                 polynomialVector[i] = this.getTerminos()[i].evaluate(vectorOriginal);
                 polynomialVector[i] = (polynomialVector[i].compareTo(BigDecimal.ZERO)==0)?
                         BigDecimal.ZERO: polynomialVector[i];
-                if(lowerLimitScale == null && upperLimitScale == null){
-                    lowerLimitScale = new BigDecimal[polynomialVector.length];
-                    upperLimitScale = new BigDecimal[polynomialVector.length];
-                    if(lowerLimitScale[i] == null && polynomialVector[i].compareTo(new BigDecimal(1))==0){
-                        lowerLimitScale[i] = BigDecimal.ZERO;
-                    }
-                }
             }
-            upperLimitScale[i] = (upperLimitScale[i]==null)?polynomialVector[i]:upperLimitScale[i];
-            lowerLimitScale[i] = (lowerLimitScale[i]==null)?polynomialVector[i]:lowerLimitScale[i];
+            polynomialUpperLimitScale[i] = (polynomialUpperLimitScale[i]==null)?polynomialVector[i]: polynomialUpperLimitScale[i];
+            polynomialLowerLimitScale[i] = (polynomialLowerLimitScale[i]==null)?polynomialVector[i]: polynomialLowerLimitScale[i];
 
-            upperLimitScale[i]=(polynomialVector[i].compareTo(upperLimitScale[i])>0)?
-                    polynomialVector[i]:upperLimitScale[i];
-            lowerLimitScale[i]=(polynomialVector[i].compareTo(lowerLimitScale[i])<0)?
-                    polynomialVector[i]:lowerLimitScale[i];
+            polynomialUpperLimitScale[i]=(polynomialVector[i].compareTo(polynomialUpperLimitScale[i])>0)?
+                    polynomialVector[i]: polynomialUpperLimitScale[i];
+            polynomialLowerLimitScale[i]=(polynomialVector[i].compareTo(polynomialLowerLimitScale[i])<0)?
+                    polynomialVector[i]: polynomialLowerLimitScale[i];
         }
         return polynomialVector;
     }
 
     public void calculateNewLimits(BigDecimal[] vectorOriginal){
         for (int i = 0; i< vectorOriginal.length; i++) {
-            if(lowerLimitScale == null && upperLimitScale == null){
-                lowerLimitScale = new BigDecimal[vectorOriginal.length];
-                upperLimitScale = new BigDecimal[vectorOriginal.length];
+            if(originalLowerLimitScale == null && originalUpperLimitScale == null){
+                originalLowerLimitScale = new BigDecimal[vectorOriginal.length];
+                originalUpperLimitScale = new BigDecimal[vectorOriginal.length];
             }
-            upperLimitScale[i] = (upperLimitScale[i]==null)?vectorOriginal[i]:upperLimitScale[i];
-            lowerLimitScale[i] = (lowerLimitScale[i]==null)?vectorOriginal[i]:lowerLimitScale[i];
+            originalUpperLimitScale[i] = (originalUpperLimitScale[i]==null)?vectorOriginal[i]: originalUpperLimitScale[i];
+            originalLowerLimitScale[i] = (originalLowerLimitScale[i]==null)?vectorOriginal[i]: originalLowerLimitScale[i];
 
-            upperLimitScale[i]=(vectorOriginal[i].compareTo(upperLimitScale[i])>0)?
-                    vectorOriginal[i]:upperLimitScale[i];
-            lowerLimitScale[i]=(vectorOriginal[i].compareTo(lowerLimitScale[i])<0)?
-                    vectorOriginal[i]:lowerLimitScale[i];
+            originalUpperLimitScale[i]=(vectorOriginal[i].compareTo(originalUpperLimitScale[i])>0)?
+                    vectorOriginal[i]: originalUpperLimitScale[i];
+            originalLowerLimitScale[i]=(vectorOriginal[i].compareTo(originalLowerLimitScale[i])<0)?
+                    vectorOriginal[i]: originalLowerLimitScale[i];
 
         }
     }
 
-    public BigDecimal[] getLowerLimitScale() {
-        return lowerLimitScale;
+    public BigDecimal[] getOriginalLowerLimitScale() {
+        return originalLowerLimitScale;
     }
 
-    public BigDecimal[] getUpperLimitScale() {
-        return upperLimitScale;
+    public BigDecimal[] getOriginalUpperLimitScale() {
+        return originalUpperLimitScale;
     }
-
-    /*
-    public static void main(String[] args) {
-        System.out.println(11);
-        System.out.println(4);
-        Modelo m = getRandomModelo(11, 4, 6);
-    }
-
- */
     public static Modelo getCustomModel(){
         Termino[] terminos = {new Termino(new int[]{0, 0, 0, 0, 0})
                             ,new Termino(new int[]{7, 0, 0, 0, 3})
@@ -157,8 +149,8 @@ public class Modelo {
     }
 
     public void eraseLimits(){
-        this.upperLimitScale = null;
-        this.lowerLimitScale = null;
+        this.originalUpperLimitScale = null;
+        this.originalLowerLimitScale = null;
     }
 
     public void setCoeficientes(BigDecimal[][] coeficientes){
@@ -173,11 +165,11 @@ public class Modelo {
         }
     }
 
-    public void setLowerLimitScale(BigDecimal[] lowerLimitScale) {
-        this.lowerLimitScale = lowerLimitScale;
+    public void setOriginalLowerLimitScale(BigDecimal[] originalLowerLimitScale) {
+        this.originalLowerLimitScale = originalLowerLimitScale;
     }
 
-    public void setUpperLimitScale(BigDecimal[] upperLimitScale) {
-        this.upperLimitScale = upperLimitScale;
+    public void setOriginalUpperLimitScale(BigDecimal[] originalUpperLimitScale) {
+        this.originalUpperLimitScale = originalUpperLimitScale;
     }
 }
