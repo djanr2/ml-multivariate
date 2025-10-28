@@ -57,7 +57,7 @@ public class Matrix {
         print(m);
 
     }
-    public static void main3(String[] args) {
+    public static void main(String[] args) {
         BigDecimal[][] a = {
                 {new BigDecimal(1), new BigDecimal(1), new BigDecimal(1), new BigDecimal(1)},
                 {new BigDecimal(1), new BigDecimal(3), new BigDecimal(9), new BigDecimal(27)},
@@ -98,7 +98,7 @@ public class Matrix {
         inverter.print(inverse);
 
         BigDecimal[][] cofactor = {
-                {new BigDecimal(1), new BigDecimal(2), new BigDecimal(3), new BigDecimal(3)},
+                {new BigDecimal(11241234), new BigDecimal(2), new BigDecimal(3), new BigDecimal(3)},
                 {new BigDecimal(1), new BigDecimal(-2), new BigDecimal(1), new BigDecimal(-2)},
                 {new BigDecimal(1), new BigDecimal(1), new BigDecimal(2), new BigDecimal(-1)},
                 {new BigDecimal(2), new BigDecimal(2), new BigDecimal(-1), new BigDecimal(-1)}
@@ -155,18 +155,18 @@ public class Matrix {
         int rows = augmentedMatrix.length;
         int cols = augmentedMatrix[0].length;
 
-        BigDecimal[][] A = new BigDecimal[rows][cols - 1];
+        BigDecimal[][] a = new BigDecimal[rows][cols - 1];
         BigDecimal[][] b = new BigDecimal[rows][1];
 
         for (int i = 0; i < rows; i++) {
             // Copy all but last column into A
             for (int j = 0; j < cols - 1; j++) {
-                A[i][j] = augmentedMatrix[i][j];
+                a[i][j] = augmentedMatrix[i][j];
             }
             // Last column is b
             b[i][0] = augmentedMatrix[i][cols - 1];
         }
-        return gaussianElimination(A, b);
+        return gaussianElimination(a, b);
     }
 
     public static BigDecimal[][] getGaussiaSolution(MatrixObject matrix){

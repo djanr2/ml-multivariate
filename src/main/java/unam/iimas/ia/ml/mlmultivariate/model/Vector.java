@@ -1,8 +1,12 @@
 package unam.iimas.ia.ml.mlmultivariate.model;
 
+import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Vector implements Comparable<Vector>{
     private final int index;
@@ -80,12 +84,23 @@ public class Vector implements Comparable<Vector>{
 
     public BigDecimal[][] getMiMaxSignVector(){
         BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
-        int sign_ = 0;
-        if(sign > 0){
-            sign_ = 1;
-        }else{
+        int sign_;
+        if(sign < 0){
             sign_ = -1;
+        }else{
+            sign_ = 1;
         }
+        //minMax[0][0] = error.multiply(new BigDecimal(sign));
+        minMax[0][0] = BigDecimal.ONE.multiply(new BigDecimal(sign_));
+        for (int i = 0; i < this.vector.length-1; i++) {
+            minMax[0][i+1] = this.vector[i];
+        }
+        return minMax;
+    }
+
+    public BigDecimal[][] getMiMaxSignVector(int sign_){
+        // Esto es correcto Ya no mover
+        BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
         //minMax[0][0] = error.multiply(new BigDecimal(sign));
         minMax[0][0] = BigDecimal.ONE.multiply(new BigDecimal(sign_));
         for (int i = 0; i < this.vector.length-1; i++) {
@@ -120,6 +135,21 @@ public class Vector implements Comparable<Vector>{
         String signRes= (result.signum()>0)?"-":"+";// se cambia el signo al imprimir porque es una resta
         return output+ " = "+ this.vector[vector.length-1] + signRes +result.abs().setScale(PRECISION, ROUNDING_MODE)
                 + " : "+this.vector[vector.length-1].subtract(result).setScale(PRECISION, ROUNDING_MODE);
+    }
+
+    public String getStringToGraph(){
+
+        String output = "";
+        BigDecimal result = BigDecimal.ZERO;
+        for (int i = 0; i < this.modelo.getTerminos().length; i++) {
+            int sign_int = this.modelo.getTerminos()[i].getCoeficiente().signum();
+            String sign = (sign_int>0)?"":"-";
+            output+=sign + "("+this.modelo.getTerminos()[i].getCoeficiente().abs() + "*" + this.vector[i]+")";
+            result = result.add(this.modelo.getTerminos()[i].getCoeficiente().multiply(this.vector[i]));
+        }
+        String signRes= (result.signum()>0)?"-":"+";// se cambia el signo al imprimir porque es una resta
+        return "" + this.vector[vector.length-1] +"\t"+ signRes +result.abs().setScale(PRECISION, ROUNDING_MODE)
+                + "\t"+this.vector[vector.length-1].subtract(result).setScale(PRECISION, ROUNDING_MODE);
     }
 
     @Override

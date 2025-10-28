@@ -160,6 +160,7 @@ public class Modelo {
     }
 
     public void setSolutionCoeficientes(BigDecimal[][] coeficientes){
+        //se omite el primer elemento porque ese es epsilon theta y solo necesitamos los coeficientes
         for (int i = 1; i < coeficientes.length; i++) {
             this.terminos[i-1].setCoeficiente(coeficientes[i][0]);
         }
