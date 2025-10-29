@@ -44,13 +44,13 @@ public class AlgoritmoAscensoRapido {
         AlgoritmoAscensoRapido aaf = new AlgoritmoAscensoRapido(file);
         aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
         //System.out.println(aaf.getM());
-        //Matrix.print(aaf.getBestCoeficients());
+        Matrix.print(aaf.getBestCoeficients());
     }
 
     public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale ) {
         seed = 31285362447900L;//System.nanoTime();
-       // seed = 35788840162600L;
-        random = new Random();
+        seed = System.nanoTime();
+        random = new Random(seed);
         this.m = Modelo.getCustomModel();
         List<BigDecimal[]> d = vectores;
         this.m.setOriginalLowerLimitScale(lowerLimitToScale);
@@ -113,10 +113,6 @@ public class AlgoritmoAscensoRapido {
         setEpsilonTetha(epsilonTetha);
         //falta poner los mejores coeficientes
         m.setSolutionCoeficientes(getBestCoeficients());
-        Vector v_= getEpsilonPhiVector(epsilonPhi);
-        System.out.println(v_);
-        System.out.println(v_.getStringToCalculate());
-        Matrix.print(getBestCoeficients());
     }
 
     public static BigDecimal getFitnessValue(BigDecimal n, BigDecimal d) {
@@ -291,7 +287,7 @@ public class AlgoritmoAscensoRapido {
         if (swap != null) {
             boolean wasSwapped = swap.contains(idsIndex);
             if(wasSwapped){
-                System.out.println("Se ciclo");
+                //System.out.println("Se ciclo");
             }
             return wasSwapped;
         }else{

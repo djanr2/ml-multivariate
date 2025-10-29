@@ -147,7 +147,7 @@ public class Vector implements Comparable<Vector>{
             output+=sign + "("+this.modelo.getTerminos()[i].getCoeficiente().abs() + "*" + this.vector[i]+")";
             result = result.add(this.modelo.getTerminos()[i].getCoeficiente().multiply(this.vector[i]));
         }
-        String signRes= (result.signum()>0)?"-":"+";// se cambia el signo al imprimir porque es una resta
+        String signRes= (result.signum()>0)?"+":"-";// se cambia el signo al imprimir porque es una resta
         return "" + this.vector[vector.length-1] +"\t"+ signRes +result.abs().setScale(PRECISION, ROUNDING_MODE)
                 + "\t"+this.vector[vector.length-1].subtract(result).setScale(PRECISION, ROUNDING_MODE);
     }
