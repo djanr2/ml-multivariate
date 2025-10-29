@@ -8,25 +8,27 @@ import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 import java.util.*;
 import java.util.List;
 
 public class AlgoritmoAscensoRapido {
 
-    private static final int PRECISION = Precision.MIN_PRECISION;
     private static final int RHO = Precision.RHO;
-    private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
+    private static final MathContext MC = new MathContext(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);;
     private static final double MIN_ERROR_EXPECTED = 0.1;
+    private static final double ALPHA =1.0; // α>0  peso del cociente (más grande => favorece más n/d
+    private static final double BETA =0.5; // penaliza magnitud de n + d
+    private static final double GAMMA =1.0; // γ≥0  fuerza del bonus por denominador pequeño.
+    private static final double DELTA =3.0; // δ>0 — cómo decae el bonus con d (si δ=1 es inversamente proporcional).
     private static Random random = new Random();
     private final Map<IdSwap, Swap> swaps;
     private Modelo m;
     private Long seed;
-
     private BigDecimal[][] bestCoeficients;
-    private BigDecimal bestEpsilonThetaDIVEpsilonPhi= BigDecimal.ZERO;
     private List<Vector> epsilonPhi;
     private List<Vector> epsilonTetha;
+    private BigDecimal bestFitness = BigDecimal.ZERO;
 
     //file is filled on constructor AlgoritmoAscensoRapido
     private final LoadFile file;
@@ -47,8 +49,8 @@ public class AlgoritmoAscensoRapido {
 
     public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale ) {
         seed = 31285362447900L;//System.nanoTime();
-        seed = 35788840162600L;
-        random = new Random(seed);
+       // seed = 35788840162600L;
+        random = new Random();
         this.m = Modelo.getCustomModel();
         List<BigDecimal[]> d = vectores;
         this.m.setOriginalLowerLimitScale(lowerLimitToScale);
@@ -67,9 +69,10 @@ public class AlgoritmoAscensoRapido {
         //TODO hay que actualizar tambien el vector solucion
         //Matrix.print(matrixA.getMatrix());
         //Matrix.print(matrixA.getVectorSolution());
+        BigDecimal[][] c;
 
         while (true){
-            BigDecimal[][] c = getCoeficientsAndEpsilonTetha(b, solution);
+            c = getCoeficientsAndEpsilonTetha(b, solution);
             this.m.setSolutionCoeficientes(c);
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
 
@@ -87,16 +90,17 @@ public class AlgoritmoAscensoRapido {
             //System.out.println(c[0][0]);
             //Matrix.print(betas);
             //System.out.println("BestIndex "+indexBeta);
-            //validateIfItsBetterOptionToSwap(epsilonTetha, epsilonPhi, epsilonPhiVector,  b, lamdas, betas, matrixA.getVectorSolution());
-
-            BigDecimal currentETDivEP = c[0][0].abs().divide(epsilonPhiVector.getError(), PRECISION, ROUNDING_MODE);
-            //System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " Div: " + currentETDivEP);
-            if(currentETDivEP.compareTo(bestEpsilonThetaDIVEpsilonPhi)>=0){
-                bestEpsilonThetaDIVEpsilonPhi = currentETDivEP;
+            BigDecimal ponderacion = getFitnessValue2(c[0][0].abs(), epsilonPhiVector.getError());
+            System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ ponderacion);
+            if(ponderacion.compareTo(bestFitness)>=0){
+                System.out.println("*");
+                bestFitness = ponderacion;
                 saveBestCoeficients(c);
             }
-            if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0
-              ||wasSwapped(epsilonTetha, epsilonTetha.get(indexBeta),epsilonPhiVector)){
+            if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0){
+                saveBestCoeficients(c);
+                break;
+            }else if(wasSwapped(epsilonTetha, epsilonTetha.get(indexBeta),epsilonPhiVector)){
                 break;
             }
             b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(b[0][indexBeta].signum()), b, indexBeta);
@@ -108,7 +112,44 @@ public class AlgoritmoAscensoRapido {
         setEpsilonPhi(epsilonPhi);
         setEpsilonTetha(epsilonTetha);
         //falta poner los mejores coeficientes
-       // m.setSolutionCoeficientes(c);
+        m.setSolutionCoeficientes(getBestCoeficients());
+        Vector v_= getEpsilonPhiVector(epsilonPhi);
+        System.out.println(v_);
+        System.out.println(v_.getStringToCalculate());
+        Matrix.print(getBestCoeficients());
+    }
+
+    public static BigDecimal getFitnessValue(BigDecimal n, BigDecimal d) {
+        // (n / d)
+        BigDecimal ratio = n.divide(d, MC);
+        // (n / d)^α
+        double ratioPow = Math.pow(ratio.doubleValue(), ALPHA);
+        // (n + d)^β
+        BigDecimal sum = n.add(d);
+        double sumPow = Math.pow(sum.doubleValue(), BETA);
+        // E(n, d) = (ratio^α) / (sum^β)
+        double fitness = ratioPow / sumPow;
+        return new BigDecimal(fitness, MC);
+    }
+
+    public static BigDecimal getFitnessValue2(BigDecimal n, BigDecimal d) {
+        // ratio = n/d
+        BigDecimal ratio = n.divide(d, MC);
+
+        // Convert to double for fractional powers (mantener precision razonable)
+        double ratioD = ratio.doubleValue();
+        double sumD = n.add(d).doubleValue();
+        double dD = d.doubleValue();
+
+        // calcular potencias con Math.pow
+        double ratioPow = Math.pow(ratioD, ALPHA);      // (n/d)^alpha
+        double sumPow = Math.pow(sumD, BETA);           // (n+d)^beta
+        double bonus = 1.0 + (GAMMA / Math.pow(dD, DELTA)); // 1 + gamma / d^delta
+
+        double fitnessD = (ratioPow / sumPow) * bonus;
+
+        // Volver a BigDecimal con el MathContext
+        return new BigDecimal(fitnessD, MC);
     }
 
     private void validateIfItsBetterOptionToSwap(List<Vector> epsilonTetha, List<Vector> epsilonPhi, Vector epsilonPhiVector,
@@ -196,7 +237,7 @@ public class AlgoritmoAscensoRapido {
         int m = epsilonPhi[0].length;
         BigDecimal[][] inverseB = new BigDecimal[m][m];
         for (int row = 0; row < m ; row++) {
-            inverseB[row][indexBeta]=b[row][indexBeta].divide(lambdaBeta[0][0], PRECISION, ROUNDING_MODE);
+            inverseB[row][indexBeta]=b[row][indexBeta].divide(lambdaBeta[0][0], MC);
         }
         for (int col = 0; col < m; col++) {
             BigDecimal[][] vectorialProduct = Matrix.mul(epsilonPhi, Matrix.getMatrixCol(b, col));
@@ -212,21 +253,16 @@ public class AlgoritmoAscensoRapido {
 
     public void swapVector( List<Vector> epsilonTheta,List<Vector> epsilonPhi, Vector epsilonThetaVector, Vector epsilonPhiVector){
         //System.out.println(" swap: {["+epsilonThetaVector.getIndexEpsilonTheta()+"] "+ epsilonThetaVector +"    \n       " + epsilonPhiVector + "}");
-        System.out.println("["+epsilonThetaVector.getIndex()+"]<->["+epsilonPhiVector.getIndex()+"]");
-        epsilonPhi.remove(epsilonPhiVector.setIndexEpsilonTheta(epsilonThetaVector.getIndexEpsilonTheta()));
-        epsilonPhi.add(epsilonThetaVector);
-        epsilonTheta.set(epsilonThetaVector.getIndexEpsilonTheta(),epsilonPhiVector);
+        //System.out.println("["+epsilonThetaVector.getIndex()+"]<->["+epsilonPhiVector.getIndex()+"]");
 
         List<Integer> idsVectoresEpsilonTheta = new ArrayList<>();
 
         for (Vector v:
-             epsilonTheta) {
+                epsilonTheta) {
             idsVectoresEpsilonTheta.add(v.getIndex());
         }
         // el orden debe de mantenerse para el Set de wasswapped()
         //System.out.println(">"+Arrays.toString(idVectoresEpsilonTheta.toArray()));
-
-        this.swaps.get(IdSwap.of(epsilonThetaVector.getIndex(), epsilonPhiVector.getIndex()));
 
         Swap swap =  this.swaps.get(IdSwap.of(epsilonThetaVector.getIndex(), epsilonPhiVector.getIndex()));
         if(swap!=null){
@@ -238,6 +274,10 @@ public class AlgoritmoAscensoRapido {
             swap.add(idsVectoresEpsilonTheta);
             this.swaps.put(IdSwap.of(epsilonThetaVector.getIndex(), epsilonPhiVector.getIndex()), swap);
         }
+
+        epsilonPhi.remove(epsilonPhiVector.setIndexEpsilonTheta(epsilonThetaVector.getIndexEpsilonTheta()));
+        epsilonPhi.add(epsilonThetaVector);
+        epsilonTheta.set(epsilonThetaVector.getIndexEpsilonTheta(),epsilonPhiVector);
     }
 
     public boolean wasSwapped(List<Vector> epsilonTheta, Vector epsilonThetaVector, Vector epsilonPhiVector) {
@@ -246,11 +286,14 @@ public class AlgoritmoAscensoRapido {
         for (Vector v : epsilonTheta) {
             idsIndex.add(v.getIndex());
         }
-        // el orden debe de mantenerse para el Set de wasswapped()
         // Buscar si ya se intercambió (ahora swaps debe ser Set<List<Integer>> o similar)
         Swap swap = this.swaps.get(IdSwap.of(epsilonThetaVector.getIndex(), epsilonPhiVector.getIndex()));
         if (swap != null) {
-            return swap.contains(idsIndex);
+            boolean wasSwapped = swap.contains(idsIndex);
+            if(wasSwapped){
+                System.out.println("Se ciclo");
+            }
+            return wasSwapped;
         }else{
             return false;
         }
@@ -298,7 +341,7 @@ public class AlgoritmoAscensoRapido {
 
         for (int i = 0; i < lamdas[0].length; i++) {
             betas[0][i] = lamdas[0][i].multiply(new BigDecimal(sign)).
-                    divide(errorRow[0][i], PRECISION, ROUNDING_MODE);
+                    divide(errorRow[0][i], MC);
             //System.out.print(s+""+lamdas[0][i]+"/"+errorRow[0][i]+"="+betas[0][i]+"\t");
         }
         return betas;
@@ -337,7 +380,7 @@ public class AlgoritmoAscensoRapido {
                     vector[i] = BigDecimal.ZERO;
                 } else {
                     vector[i] = ((x.subtract(a))).
-                            divide((b.subtract(a)), PRECISION, ROUNDING_MODE);
+                            divide((b.subtract(a)), MC);
                     vector[i] = (vector[i].compareTo(BigDecimal.ONE)==0)?BigDecimal.ONE:vector[i];
                 }
             }
