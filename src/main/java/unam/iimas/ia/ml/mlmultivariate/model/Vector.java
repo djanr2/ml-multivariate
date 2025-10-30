@@ -101,7 +101,6 @@ public class Vector implements Comparable<Vector>{
     public BigDecimal[][] getMiMaxSignVector(int sign_){
         // Esto es correcto Ya no mover
         BigDecimal[][] minMax= new BigDecimal[1][this.vector.length];
-        //minMax[0][0] = error.multiply(new BigDecimal(sign));
         minMax[0][0] = BigDecimal.ONE.multiply(new BigDecimal(sign_));
         for (int i = 0; i < this.vector.length-1; i++) {
             minMax[0][i+1] = this.vector[i];

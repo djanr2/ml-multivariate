@@ -27,6 +27,7 @@ public class AlgoritmoAscensoRapido {
     private Long seed;
     private BigDecimal[][] bestCoeficients;
     private List<Vector> epsilonPhi;
+
     private List<Vector> epsilonTetha;
     private BigDecimal bestFitness = BigDecimal.ZERO;
 
@@ -48,8 +49,9 @@ public class AlgoritmoAscensoRapido {
     }
 
     public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale ) {
-        seed = 31285362447900L;//System.nanoTime();
-        seed = System.nanoTime();
+        Random localRandom = new Random();
+        seed = localRandom.nextLong();
+        //seed = -8128723502656744799L;
         random = new Random(seed);
         this.m = Modelo.getCustomModel();
         List<BigDecimal[]> d = vectores;
@@ -91,9 +93,9 @@ public class AlgoritmoAscensoRapido {
             //Matrix.print(betas);
             //System.out.println("BestIndex "+indexBeta);
             BigDecimal ponderacion = getFitnessValue2(c[0][0].abs(), epsilonPhiVector.getError());
-            System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ ponderacion);
+            //System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ ponderacion);
             if(ponderacion.compareTo(bestFitness)>=0){
-                System.out.println("*");
+                //System.out.println("*");
                 bestFitness = ponderacion;
                 saveBestCoeficients(c);
             }

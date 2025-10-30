@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 public class FAA {
 
-    private static final double TOLERANCE = 0.05;
+    private static final double TOLERANCE = 1;
 
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
@@ -26,8 +26,9 @@ public class FAA {
         }
         System.out.println("---------------------");
         Matrix.print(aaf.getBestCoeficients());
+        System.out.println("seed: " +aaf.getSeed());
+        System.out.println();
         System.out.println("---------------------");
-        System.out.println(aaf.getSeed());
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonThetha());
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonPhi());
 
@@ -35,7 +36,6 @@ public class FAA {
         aaf.getEpsilonPhi()) {
             System.out.println(v.getStringToGraph());
         }
-
         //System.out.println(aaf.getEpsilonPhi().get(0).getStringToCalculate());
     }
 }
