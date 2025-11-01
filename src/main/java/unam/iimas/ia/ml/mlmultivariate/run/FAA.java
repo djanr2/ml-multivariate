@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 public class FAA {
 
-    private static final double TOLERANCE = 1;
+    private static final double TOLERANCE = 0.3;
 
     public static void main(String[] args) {
         LoadFile file = new LoadFile();

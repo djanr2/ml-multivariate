@@ -43,7 +43,7 @@ public class Modelo {
             while(indexL>indexPotenciaMaximaL) {
                 indexL = random.nextInt(20);
             }
-            set_terminos.add(Termino.getRandomTermino(indexL,numeroVariables));
+            set_terminos.add(Termino.getRandomTermino(L.getIndexPower(indexL),numeroVariables));
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
         Collections.sort(lista_terminos);
