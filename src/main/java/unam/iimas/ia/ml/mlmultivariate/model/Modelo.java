@@ -14,15 +14,6 @@ public class Modelo {
     private final Random random;
     private final long seed;
 
-
-    public static void main(String[] args) {
-        Modelo m = new Modelo();
-
-        Modelo m1 = m.getRandomModelo(11, 7,3);
-        System.out.println(m1);
-    }
-
-
     public Modelo(Termino[] terminos){
         this.terminos = terminos;
         Random localRandom = new Random();
@@ -39,11 +30,11 @@ public class Modelo {
         this.random = new Random(seed);
     }
 
-    public static Modelo getRandomModelo(int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
+    public static Modelo getRandomModelo(int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables, long seed){
         Set<Termino> set_terminos = new HashSet<>();
         Termino t = Termino.getRandomTermino(0,numeroVariables);
         set_terminos.add(t);
-        Random random = new Random();
+        Random random = new Random(seed);
         if(indexPotenciaMaximaL>20){
             throw new IllegalArgumentException("La lista 'L' solo contiene 20 potencias, el valor solicitado no existe");
         }

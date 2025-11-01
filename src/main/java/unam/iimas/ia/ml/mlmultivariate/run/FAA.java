@@ -27,6 +27,7 @@ public class FAA {
         System.out.println("---------------------");
         Matrix.print(aaf.getBestCoeficients());
         System.out.println("seed: " +aaf.getSeed());
+        System.out.println(aaf.getM());
         System.out.println();
         System.out.println("---------------------");
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonThetha());

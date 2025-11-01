@@ -53,7 +53,7 @@ public class AlgoritmoAscensoRapido {
         seed = localRandom.nextLong();
         //seed = -8128723502656744799L;
         random = new Random(seed);
-        this.m = Modelo.getCustomModel();
+        this.m = Modelo.getRandomModelo(11, 15, this.file.getNumeroVariables(), seed);
         List<BigDecimal[]> d = vectores;
         this.m.setOriginalLowerLimitScale(lowerLimitToScale);
         this.m.setOriginalUpperLimitScale(upperLimitToScale);
@@ -69,29 +69,15 @@ public class AlgoritmoAscensoRapido {
         BigDecimal[][] b = Matrix.invertMatrix(matrixA.getMatrix());
         BigDecimal[][] solution = matrixA.getVectorSolution();
         //TODO hay que actualizar tambien el vector solucion
-        //Matrix.print(matrixA.getMatrix());
-        //Matrix.print(matrixA.getVectorSolution());
         BigDecimal[][] c;
 
         while (true){
             c = getCoeficientsAndEpsilonTetha(b, solution);
             this.m.setSolutionCoeficientes(c);
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
-
-            //System.out.println("--------------------------------------------");
-            //Matrix.print(Matrix.invertMatrix(b));
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
             BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
             int indexBeta = getBetaIndex(betas);
-            /* 2
-            System.out.println("Epsilon Theta Original");
-            System.out.println(c[0][0]);
-            Matrix.print(matrixA.getMatrix());
-            Matrix.print(Matrix.invertMatrix(b));
-             */
-            //System.out.println(c[0][0]);
-            //Matrix.print(betas);
-            //System.out.println("BestIndex "+indexBeta);
             BigDecimal ponderacion = getFitnessValue2(c[0][0].abs(), epsilonPhiVector.getError());
             //System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ ponderacion);
             if(ponderacion.compareTo(bestFitness)>=0){
