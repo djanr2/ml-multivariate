@@ -28,6 +28,10 @@ public class L {
         return l;
     }
 
+    public static int getIndexPower(int i){
+        return L.powers[i];
+    }
+
 
 
 }

@@ -2,8 +2,6 @@ package unam.iimas.ia.ml.mlmultivariate.model;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Stream;
-
 
 public class Modelo {
 
@@ -13,38 +11,55 @@ public class Modelo {
     private BigDecimal[] originalUpperLimitScale;
     private BigDecimal[] polynomialLowerLimitScale;
     private BigDecimal[] polynomialUpperLimitScale;
+    private final Random random;
+    private final long seed;
 
-    private final int l;
+
+    public static void main(String[] args) {
+        Modelo m = new Modelo();
+
+        Modelo m1 = m.getRandomModelo(11, 7,3);
+        System.out.println(m1);
+    }
 
 
     public Modelo(Termino[] terminos){
-        this.l =  Arrays.stream(terminos).mapToInt(Termino::getPotencia).sum();
         this.terminos = terminos;
+        Random localRandom = new Random();
+        this.seed = localRandom.nextLong();
+        //this.seed = 217966992963623763L;
+        this.random = new Random(seed);
+
     }
 
-
-    public static Modelo getRandomModelo(int potenciaL, int numeroMaximoTerminos, int numeroVariables){
-        System.out.println(numeroMaximoTerminos);
-        int potenciaAux = potenciaL;
-        HashSet<Termino> term = new HashSet<>();
-        Random rand = new Random();
-        do{
-            int potencia = rand.nextInt(1,potenciaAux+1);
-            if(numeroMaximoTerminos==1){
-                potencia = potenciaAux;
-            }
-            Termino t = Termino.getRandomTermino(potencia,numeroVariables);
-            if(term.add(t)){
-                potenciaAux-=potencia;
-                numeroMaximoTerminos--;
-            }
-
-        } while ( potenciaAux > 0 );
-
-        return new Modelo(Stream.concat(
-                Stream.of(Termino.getZeroTerm(numeroVariables)),
-                Stream.of(term.toArray(new Termino[term.size()]))).toArray(Termino[]::new));
+    public Modelo(){
+        Random localRandom = new Random();
+        this.seed = localRandom.nextLong();
+        //this.seed = 217966992963623763L;
+        this.random = new Random(seed);
     }
+
+    public static Modelo getRandomModelo(int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
+        Set<Termino> set_terminos = new HashSet<>();
+        Termino t = Termino.getRandomTermino(0,numeroVariables);
+        set_terminos.add(t);
+        Random random = new Random();
+        if(indexPotenciaMaximaL>20){
+            throw new IllegalArgumentException("La lista 'L' solo contiene 20 potencias, el valor solicitado no existe");
+        }
+        while (set_terminos.size() < numeroTerminos){
+            int indexL = 21;// se coloca el nuemro 21 para establecer un limite maximo nunca lacanzado en la primera ireracion
+            while(indexL>indexPotenciaMaximaL) {
+                indexL = random.nextInt(20);
+            }
+            set_terminos.add(Termino.getRandomTermino(indexL,numeroVariables));
+        }
+        List<Termino> lista_terminos = new ArrayList<>(set_terminos);
+        Collections.sort(lista_terminos);
+
+        return new Modelo(lista_terminos.toArray(new Termino[lista_terminos.size()]));
+    }
+
 
 
     @Override
@@ -54,10 +69,6 @@ public class Modelo {
 
     public Termino[] getTerminos() {
         return terminos;
-    }
-
-    public int getL() {
-        return l;
     }
 
     public BigDecimal[] getPolynomialVector(BigDecimal[] vectorOriginal){
@@ -72,7 +83,6 @@ public class Modelo {
         // Es decir no se modifica el valor de el ultimo termino que esta como variable independiete
         // al mapéarse al modelo
         polynomialVector[this.getTerminos().length] = vectorOriginal[vectorOriginal.length-1];
-       //TODO ANALYZE IF LOWER LIMIT IS NEEDED TO SET AS 0
         for (int i = 0; i< polynomialVector.length; i++) {
             if(i< (polynomialVector.length-1)){ // se excluye el ultimo valor pues ya se agrego en las lineas anteriores
                 polynomialVector[i] = this.getTerminos()[i].evaluate(vectorOriginal);
@@ -146,7 +156,9 @@ public class Modelo {
                 ,new Termino(new int[]{2, 1, 1, 1})
                 ,new Termino(new int[]{0, 0, 1, 0})};
         Termino[] terminos5 =
-                {new Termino(new int[]{0, 1})
+
+                {new Termino(new int[]{0, 0})
+                ,new Termino(new int[]{0, 1})
                 ,new Termino(new int[]{0, 2})
                 ,new Termino(new int[]{1, 0})
                 ,new Termino(new int[]{1, 1})
@@ -183,5 +195,13 @@ public class Modelo {
 
     public void setOriginalUpperLimitScale(BigDecimal[] originalUpperLimitScale) {
         this.originalUpperLimitScale = originalUpperLimitScale;
+    }
+
+    public Random getRandom() {
+        return random;
+    }
+
+    public long getSeed() {
+        return seed;
     }
 }

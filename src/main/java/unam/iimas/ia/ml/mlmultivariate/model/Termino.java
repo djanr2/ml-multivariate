@@ -3,7 +3,7 @@ package unam.iimas.ia.ml.mlmultivariate.model;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class Termino {
+public class Termino implements Comparable<Termino>{
 
     private static final int MAXIMO_TERMINO = 10; //
     private static final int MINIMO_TERMINO = 4; //
@@ -119,13 +119,14 @@ public class Termino {
         return Arrays.hashCode(potencias);
     }
 
-    /*
-    public static void main(String[] args) {
-        Termino t = Termino.getRandomTermino(40,6);
-        System.out.println(t);
+    public int getOrden() {
+        int suma = 0;
+        for (int p : potencias) suma += p;
+        return suma;
     }
-     */
 
-
-
+    @Override
+    public int compareTo(Termino otro) {
+        return Integer.compare(this.getOrden(), otro.getOrden());
+    }
 }
