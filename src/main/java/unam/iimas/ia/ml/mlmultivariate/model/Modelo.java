@@ -30,9 +30,9 @@ public class Modelo {
         this.random = new Random(seed);
     }
 
-    public static Modelo getRandomModelo(int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables, long seed){
+    public static Modelo getRandomModelo(long seed, int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
         Set<Termino> set_terminos = new HashSet<>();
-        Termino t = Termino.getRandomTermino(0,numeroVariables);
+        Termino t = Termino.getRandomTermino(seed,0,numeroVariables);
         set_terminos.add(t);
         Random random = new Random(seed);
         if(indexPotenciaMaximaL>20){
@@ -43,7 +43,7 @@ public class Modelo {
             while(indexL>indexPotenciaMaximaL) {
                 indexL = random.nextInt(20);
             }
-            set_terminos.add(Termino.getRandomTermino(L.getIndexPower(indexL),numeroVariables));
+            set_terminos.add(Termino.getRandomTermino(seed, L.getIndexPower(indexL),numeroVariables));
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
         Collections.sort(lista_terminos);

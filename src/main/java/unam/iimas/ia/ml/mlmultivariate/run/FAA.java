@@ -7,10 +7,14 @@ import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
 import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
 
 public class FAA {
 
-    private static final double TOLERANCE = 0.3;
+    private static final double TOLERANCE = 1;
 
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
@@ -33,8 +37,12 @@ public class FAA {
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonThetha());
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonPhi());
 
+        List<Vector> listaCompletaVectores = aaf.getEpsilonPhi();
+        listaCompletaVectores.addAll(aaf.getEpsilonTetha());
+        listaCompletaVectores.sort(Comparator.comparingInt(Vector::getIndex));
+
         for (Vector v:
-        aaf.getEpsilonPhi()) {
+                listaCompletaVectores) {
             System.out.println(v.getStringToGraph());
         }
         //System.out.println(aaf.getEpsilonPhi().get(0).getStringToCalculate());

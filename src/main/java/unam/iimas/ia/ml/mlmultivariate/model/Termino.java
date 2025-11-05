@@ -36,16 +36,16 @@ public class Termino implements Comparable<Termino>{
         return random.nextInt(MINIMO_TERMINO,MAXIMO_TERMINO + 1);// Número + 1 inclusive
     }
 
-    public static Termino getRandomTermino(int potenciaTermino, int numeroDeVariables){
+    public static Termino getRandomTermino(long seed, int potenciaTermino, int numeroDeVariables){
         Termino termino = new Termino(new BigDecimal(1), potenciaTermino,numeroDeVariables);
         int potenciaTerminoAux = potenciaTermino;
         int potencia=0;
-        Random rand = new Random();
+        Random rand = new Random(seed);
         List<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < numeroDeVariables; i++) {
             numbers.add(i);
         }
-        Collections.shuffle(numbers);
+        Collections.shuffle(numbers, rand);
         for (int i = 0; i < numeroDeVariables; i++) {
             potencia = rand.nextInt(potenciaTerminoAux+1);
             if(i==(numeroDeVariables-1)){
