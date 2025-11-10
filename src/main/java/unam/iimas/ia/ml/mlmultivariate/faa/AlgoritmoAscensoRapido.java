@@ -44,17 +44,17 @@ public class AlgoritmoAscensoRapido {
         LoadFile file = new LoadFile();
         AlgoritmoAscensoRapido aaf = new AlgoritmoAscensoRapido(file);
         aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
-        //System.out.println(aaf.getM());
+        System.out.println(aaf.getM());
         Matrix.print(aaf.getBestCoeficients());
     }
 
     public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale ) {
-        BigDecimal menor = new BigDecimal("1E1000");;
+        BigDecimal menor = new BigDecimal("1E1000");
         Random localRandom = new Random();
         seed = localRandom.nextLong();
-        seed = -3729315339680374604L;
+        //seed = -759629227675177190L;
         random = new Random(seed);
-        this.m = Modelo.getRandomModelo(seed, 11, 10, this.file.getNumeroVariables());
+        this.m = Modelo.getRandomModelo(seed, 6, 9, this.file.getNumeroVariables());
         List<BigDecimal[]> d = vectores;
         this.m.setOriginalLowerLimitScale(lowerLimitToScale);
         this.m.setOriginalUpperLimitScale(upperLimitToScale);
@@ -71,7 +71,7 @@ public class AlgoritmoAscensoRapido {
         BigDecimal[][] solution = matrixA.getVectorSolution();
         //TODO hay que actualizar tambien el vector solucion
         BigDecimal[][] c;
-
+        //TODO tienes que validar que metodo es mejor para encontrar los coeficientes. Priorizar que epsion phi sea el mas peuqueño
         while (true){
             c = getCoeficientsAndEpsilonTetha(b, solution);
             this.m.setSolutionCoeficientes(c);
@@ -98,6 +98,7 @@ public class AlgoritmoAscensoRapido {
             }else if(wasSwapped(epsilonTetha, epsilonTetha.get(indexBeta),epsilonPhiVector)){
                 break;
             }
+            //b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(), b, indexBeta);
             b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(b[0][indexBeta].signum()), b, indexBeta);
             swapVector(epsilonTetha, epsilonPhi, epsilonTetha.get(indexBeta), epsilonPhiVector);
             solution[indexBeta][0] = epsilonTetha.get(indexBeta).getVector()[epsilonTetha.get(indexBeta).getVector().length-1];

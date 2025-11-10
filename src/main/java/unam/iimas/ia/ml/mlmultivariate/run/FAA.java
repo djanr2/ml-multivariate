@@ -14,7 +14,7 @@ import java.util.PriorityQueue;
 
 public class FAA {
 
-    private static final double TOLERANCE = 1;
+    private static final double TOLERANCE = 0.3;
 
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
@@ -24,6 +24,8 @@ public class FAA {
             aaf = new AlgoritmoAscensoRapido(file);
             aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
             //System.out.println(aaf.getBestCoeficients()[0][0]);
+            //TODO tienes que validar que metodo es mejor para encontrar los coeficientes. Priorizar que epsion phi sea el mas peuqueño
+            //Sacar epsilon phi y ese es el de la tolerancioa
             if (aaf.getBestCoeficients()[0][0].abs().compareTo(new BigDecimal(TOLERANCE))<= 0){
                 break;
             }
