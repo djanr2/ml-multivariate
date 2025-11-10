@@ -4,125 +4,15 @@ import unam.iimas.ia.ml.mlmultivariate.model.Precision;
 import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.List;
 
 public class Matrix {
 
-    private static final int PRECISION = Precision.MIN_PRECISION;
-    private static final RoundingMode ROUNDING_MODE = Precision.ROUNDING_MODE;
-    public static void main2(String[] args) {
-        BigDecimal[][] matriz = {
-                {
-                        new BigDecimal("-0.486313"), new BigDecimal("-0.972626"), new BigDecimal("1.458939"),
-                        new BigDecimal("-0.583575"), new BigDecimal("0.236500"), new BigDecimal("0.230026"),
-                        new BigDecimal("-0.117049")
-                },
-                {
-                        new BigDecimal("-0.207350"), new BigDecimal("-0.414700"), new BigDecimal("0.622050"),
-                        new BigDecimal("-0.248820"), new BigDecimal("0.042994"), new BigDecimal("0.017830"),
-                        new BigDecimal("-0.187996")
-                },
-                {
-                        new BigDecimal("-1.581880"), new BigDecimal("-3.163760"), new BigDecimal("4.745640"),
-                        new BigDecimal("-1.898256"), new BigDecimal("2.502344"), new BigDecimal("7.916815"),
-                        new BigDecimal("8.520903")
-                },
-                {
-                        new BigDecimal("-1.871713"), new BigDecimal("-3.743427"), new BigDecimal("5.615140"),
-                        new BigDecimal("-2.246056"), new BigDecimal("3.503311"), new BigDecimal("13.114387"),
-                        new BigDecimal("14.371642")
-                },
-                {
-                        new BigDecimal("-1.867709"), new BigDecimal("-3.735418"), new BigDecimal("5.603127"),
-                        new BigDecimal("-2.241251"), new BigDecimal("3.488336"), new BigDecimal("13.030394"),
-                        new BigDecimal("14.277480")
-                },
-                {
-                        new BigDecimal("-1.255656"), new BigDecimal("-2.511312"), new BigDecimal("3.766968"),
-                        new BigDecimal("-1.506787"), new BigDecimal("1.576672"), new BigDecimal("3.959515"),
-                        new BigDecimal("4.029400")
-                },
-                {
-                        new BigDecimal("-1.628388"), new BigDecimal("-3.256777"), new BigDecimal("4.885165"),
-                        new BigDecimal("-1.954066"), new BigDecimal("2.651649"), new BigDecimal("8.635830"),
-                        new BigDecimal("9.333413")
-                }
-        };
-
-        BigDecimal[][] m = Matrix.transponer(matriz);
-        print(matriz);
-        System.out.println();
-        print(m);
-
-    }
-    public static void main(String[] args) {
-        BigDecimal[][] a = {
-                {new BigDecimal(1), new BigDecimal(1), new BigDecimal(1), new BigDecimal(1)},
-                {new BigDecimal(1), new BigDecimal(3), new BigDecimal(9), new BigDecimal(27)},
-                {new BigDecimal(1), new BigDecimal(6), new BigDecimal(36), new BigDecimal(216)},
-                {new BigDecimal(1), new BigDecimal(8), new BigDecimal(64), new BigDecimal(512)}
-        };
-
-        BigDecimal[][] b = {
-                {new BigDecimal(2)},
-                {new BigDecimal(5)},
-                {new BigDecimal(3)},
-                {new BigDecimal(4.5)}
-        };
-
-
-        BigDecimal[][] solution = gaussianElimination(a, b);
-
-        System.out.printf("Solution:%n");
-        System.out.printf("w = %.6f%n", solution[0][0]);
-        System.out.printf("x = %.6f%n", solution[1][0]);
-        System.out.printf("y = %.6f%n", solution[2][0]);
-        System.out.printf("z = %.6f%n", solution[3][0]);
-
-
-        BigDecimal[][] matrix = {
-                {new BigDecimal(2), new BigDecimal(1), new BigDecimal(1), new BigDecimal(0), new BigDecimal(0), new BigDecimal(0)},
-                {new BigDecimal(4), new BigDecimal(3), new BigDecimal(3), new BigDecimal(1), new BigDecimal(0), new BigDecimal(0)},
-                {new BigDecimal(8), new BigDecimal(7), new BigDecimal(9), new BigDecimal(5), new BigDecimal(1), new BigDecimal(0)},
-                {new BigDecimal(6), new BigDecimal(7), new BigDecimal(9), new BigDecimal(8), new BigDecimal(6), new BigDecimal(4)},
-                {new BigDecimal(4), new BigDecimal(5), new BigDecimal(7), new BigDecimal(9), new BigDecimal(10), new BigDecimal(8)},
-                {new BigDecimal(2), new BigDecimal(3), new BigDecimal(5), new BigDecimal(7), new BigDecimal(9), new BigDecimal(11)}
-        };
-
-        Matrix inverter = new Matrix();
-        BigDecimal[][] inverse = inverter.invertMatrix(matrix);
-
-        System.out.println("\nFinal Inverse Matrix:");
-        inverter.print(inverse);
-
-        BigDecimal[][] cofactor = {
-                {new BigDecimal(11241234), new BigDecimal(2), new BigDecimal(3), new BigDecimal(3)},
-                {new BigDecimal(1), new BigDecimal(-2), new BigDecimal(1), new BigDecimal(-2)},
-                {new BigDecimal(1), new BigDecimal(1), new BigDecimal(2), new BigDecimal(-1)},
-                {new BigDecimal(2), new BigDecimal(2), new BigDecimal(-1), new BigDecimal(-1)}
-        };
-
-        BigDecimal[][] cofactor2 = {
-            {new BigDecimal(1),new BigDecimal( 3.4036574123), new BigDecimal( 0.7777104424), new BigDecimal( 2.5450038943)},
-            {new BigDecimal(1),new BigDecimal(-3.2753809464), new BigDecimal(-1.2259223606), new BigDecimal(-1.2616234678)},
-            {new BigDecimal(1),new BigDecimal(-2.4268597233), new BigDecimal(-1.6606458474), new BigDecimal(-1.1460239692)},
-            {new BigDecimal(1),new BigDecimal(-0.2541887185), new BigDecimal(-3.5013090525), new BigDecimal( 2.4086533150)}
-        };
-
-
-
-        System.out.println("Cofactor");
-
-        BigDecimal c= getCofactor(0,0, cofactor);
-
-        System.out.println(c);
-
-    }
-
+    private static final MathContext MC = new MathContext(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
     public static BigDecimal[][] gaussianElimination(BigDecimal[][] a, BigDecimal[][] b) {
-        // Copias defensivas (para no alterar los originales)
         BigDecimal[][] aCopy = cloneMatrix(a);
         BigDecimal[][] bCopy = cloneMatrix(b);
         int n = bCopy.length;
@@ -130,9 +20,9 @@ public class Matrix {
         for (int pivot = 0; pivot < n; pivot++) {
             BigDecimal pivotVal = aCopy[pivot][pivot];
             for (int j = pivot; j < n; j++) {
-                aCopy[pivot][j] = aCopy[pivot][j].divide(pivotVal, PRECISION, ROUNDING_MODE);
+                aCopy[pivot][j] = aCopy[pivot][j].divide(pivotVal, MC);
             }
-            bCopy[pivot][0] =  bCopy[pivot][0].divide(pivotVal, PRECISION, ROUNDING_MODE);
+            bCopy[pivot][0] =  bCopy[pivot][0].divide(pivotVal, MC);
             for (int i = pivot + 1; i < n; i++) {
                 BigDecimal factor = aCopy[i][pivot];
                 for (int j = pivot; j < n; j++) {
@@ -145,7 +35,7 @@ public class Matrix {
         for (int i = n - 1; i >= 0; i--) {
             x[i][0] = bCopy[i][0];
             for (int j = i + 1; j < n; j++) {
-                x[i][0] = x[i][0].subtract(aCopy[i][j].multiply(x[j][0])).setScale(PRECISION, ROUNDING_MODE);
+                x[i][0] = x[i][0].subtract(aCopy[i][j].multiply(x[j][0])).setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
             }
         }
         return x;
@@ -231,7 +121,7 @@ public class Matrix {
 
     private static void normalizeRow(BigDecimal[][] matrix, int row, BigDecimal pivot) {
         for (int j = 0; j < matrix[row].length; j++) {
-            matrix[row][j] = matrix[row][j].divide(pivot, PRECISION, ROUNDING_MODE);
+            matrix[row][j] = matrix[row][j].divide(pivot,MC);
         }
     }
 
@@ -239,7 +129,7 @@ public class Matrix {
         BigDecimal factor = matrix[targetRow][pivotRow];
         for (int j = 0; j < matrix[targetRow].length; j++) {
             BigDecimal value = factor.multiply(matrix[pivotRow][j]);
-            matrix[targetRow][j] = matrix[targetRow][j].subtract(value).setScale(PRECISION,ROUNDING_MODE);
+            matrix[targetRow][j] = matrix[targetRow][j].subtract(value).setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
         }
     }
 
@@ -288,14 +178,15 @@ public class Matrix {
         }
 
         if (n == 2) {
-            return matrix[0][0].multiply(matrix[1][1]).subtract(matrix[0][1].multiply(matrix[1][0])).setScale(PRECISION, ROUNDING_MODE);
+            return matrix[0][0].multiply(matrix[1][1]).subtract(matrix[0][1].multiply(matrix[1][0]))
+                    .setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
         }
 
         BigDecimal det = BigDecimal.ZERO;
 
         for (int j = 0; j < n; j++) {
             BigDecimal[][] minor = getMinor(matrix, 0, j);
-            BigDecimal cofactor = matrix[0][j].multiply(determinant(minor)).setScale(PRECISION, ROUNDING_MODE);
+            BigDecimal cofactor = matrix[0][j].multiply(determinant(minor)).setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
             if (j % 2 == 0) {
                 det = det.add(cofactor);
             } else {
@@ -303,7 +194,7 @@ public class Matrix {
             }
         }
 
-        return det.setScale(PRECISION, ROUNDING_MODE);
+        return det.setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
     }
 
     public static BigDecimal[][] mul(BigDecimal[][] a, BigDecimal[][] b) {
@@ -331,7 +222,8 @@ public class Matrix {
         for (int i = 0; i < filasA; i++) {
             for (int j = 0; j < columnasB; j++) {
                 for (int k = 0; k < columnasA; k++) {
-                    resultado[i][j] = resultado[i][j].add(a[i][k].multiply(b[k][j])).setScale(PRECISION, ROUNDING_MODE);
+                    resultado[i][j] = resultado[i][j].add(a[i][k].multiply(b[k][j]))
+                            .setScale(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
                 }
             }
         }
@@ -440,5 +332,4 @@ public class Matrix {
         }
         return copy;
     }
-
 }
