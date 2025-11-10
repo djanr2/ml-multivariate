@@ -35,13 +35,11 @@ public class FAA {
             }
         } while (i<10);
                 // System.out.println("---------------------");
-        // Matrix.print(aaf.getBestCoeficients());
-        // System.out.println("seed: " +aaf.getSeed());
-        // System.out.println(aaf.getM());
-        // System.out.println();
-        // System.out.println("---------------------");
-        //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonThetha());
-        //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonPhi());
+         Matrix.print(aaf.getBestCoeficients());
+         System.out.println("seed: " +aaf.getSeed());
+         System.out.println(aaf.getM());
+         System.out.println();
+         System.out.println("---------------------");
 
         List<Vector> listaCompletaVectores = aaf.getEpsilonPhi();
         listaCompletaVectores.addAll(aaf.getEpsilonTetha());
