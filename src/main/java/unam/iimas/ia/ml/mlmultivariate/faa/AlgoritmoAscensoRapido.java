@@ -31,6 +31,8 @@ public class AlgoritmoAscensoRapido {
     private List<Vector> epsilonTetha;
     private BigDecimal bestFitness = BigDecimal.ZERO;
 
+    private BigDecimal bestEpsilonPhiValue = BigDecimal.ONE;
+
     //file is filled on constructor AlgoritmoAscensoRapido
     private final LoadFile file;
 
@@ -54,7 +56,7 @@ public class AlgoritmoAscensoRapido {
         seed = localRandom.nextLong();
         //seed = -759629227675177190L;
         random = new Random(seed);
-        this.m = Modelo.getRandomModelo(seed, 6, 9, this.file.getNumeroVariables());
+        this.m = Modelo.getRandomModelo(seed, 9, 15, this.file.getNumeroVariables());
         List<BigDecimal[]> d = vectores;
         this.m.setOriginalLowerLimitScale(lowerLimitToScale);
         this.m.setOriginalUpperLimitScale(upperLimitToScale);
@@ -79,23 +81,19 @@ public class AlgoritmoAscensoRapido {
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
             BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
             int indexBeta = getBetaIndex(betas);
-            BigDecimal ponderacion = getFitnessValue2(c[0][0].abs(), epsilonPhiVector.getError());
-            System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ ponderacion);
+            //System.out.println(seed+ " eT: "+c[0][0].abs()+" eP: "+epsilonPhiVector.getError()+ " ponderacion: "+ "ponderacion");
             if(epsilonPhiVector.getError().compareTo(menor)<0){
                 menor = new BigDecimal(epsilonPhiVector.getError().toString());
-            }
-            if(ponderacion.compareTo(bestFitness)>=0){
-                System.out.println("*");
-                bestFitness = ponderacion;
                 saveBestCoeficients(c);
+                this.bestEpsilonPhiValue = new BigDecimal(epsilonPhiVector.getError().toString());
             }
             //if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0){
             if(c[0][0].abs().compareTo(epsilonPhiVector.getError())>=0){
-                System.out.println(c[0][0].abs()+ ": "+ epsilonPhiVector.getError());
-                System.out.println("Convergio");
-                saveBestCoeficients(c);
+                //System.out.println("Convergio:");
+                //System.out.println(" eT: "+c[0][0].abs()+" < eP: "+epsilonPhiVector.getError());
                 break;
             }else if(wasSwapped(epsilonTetha, epsilonTetha.get(indexBeta),epsilonPhiVector)){
+                //System.out.println("Cycled");
                 break;
             }
             //b = getInverseFromLamda(epsilonPhiVector.getMiMaxSignVector(), b, indexBeta);
@@ -104,8 +102,7 @@ public class AlgoritmoAscensoRapido {
             solution[indexBeta][0] = epsilonTetha.get(indexBeta).getVector()[epsilonTetha.get(indexBeta).getVector().length-1];
 
         }
-        System.out.println("Menor: "+menor);
-
+        //System.out.println("Menor: "+menor);
         setEpsilonPhi(epsilonPhi);
         setEpsilonTetha(epsilonTetha);
         //falta poner los mejores coeficientes
@@ -282,11 +279,7 @@ public class AlgoritmoAscensoRapido {
         // Buscar si ya se intercambió (ahora swaps debe ser Set<List<Integer>> o similar)
         Swap swap = this.swaps.get(IdSwap.of(epsilonThetaVector.getIndex(), epsilonPhiVector.getIndex()));
         if (swap != null) {
-            boolean wasSwapped = swap.contains(idsIndex);
-            if(wasSwapped){
-                System.out.println("Se ciclo");
-            }
-            return wasSwapped;
+            return swap.contains(idsIndex);
         }else{
             return false;
         }
@@ -624,5 +617,9 @@ public class AlgoritmoAscensoRapido {
 
     public void setSeed(Long seed) {
         this.seed = seed;
+    }
+
+    public BigDecimal getBestEpsilonPhiValue() {
+        return bestEpsilonPhiValue;
     }
 }

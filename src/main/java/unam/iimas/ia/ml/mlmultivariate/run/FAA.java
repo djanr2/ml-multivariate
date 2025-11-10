@@ -19,23 +19,27 @@ public class FAA {
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
         AlgoritmoAscensoRapido aaf;
+        BigDecimal menor = BigDecimal.ONE;
 
-        while (true) {
+        int i = 0;
+        do {
+            i++;
             aaf = new AlgoritmoAscensoRapido(file);
             aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
             //System.out.println(aaf.getBestCoeficients()[0][0]);
             //TODO tienes que validar que metodo es mejor para encontrar los coeficientes. Priorizar que epsion phi sea el mas peuqueño
             //Sacar epsilon phi y ese es el de la tolerancioa
-            if (aaf.getBestCoeficients()[0][0].abs().compareTo(new BigDecimal(TOLERANCE))<= 0){
-                break;
+            //System.out.println(aaf.getBestEpsilonPhiValue());
+            if(aaf.getBestEpsilonPhiValue().compareTo(menor)<=0){
+                menor = new BigDecimal(aaf.getBestEpsilonPhiValue().toString());
             }
-        }
-        System.out.println("---------------------");
-        Matrix.print(aaf.getBestCoeficients());
-        System.out.println("seed: " +aaf.getSeed());
-        System.out.println(aaf.getM());
-        System.out.println();
-        System.out.println("---------------------");
+        } while (i<10);
+                // System.out.println("---------------------");
+        // Matrix.print(aaf.getBestCoeficients());
+        // System.out.println("seed: " +aaf.getSeed());
+        // System.out.println(aaf.getM());
+        // System.out.println();
+        // System.out.println("---------------------");
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonThetha());
         //AlgoritmoAscensoRapido.printVectores(aaf.getEpsilonPhi());
 
@@ -48,5 +52,7 @@ public class FAA {
             System.out.println(v.getStringToGraph());
         }
         //System.out.println(aaf.getEpsilonPhi().get(0).getStringToCalculate());
+        System.out.println();
+        System.out.println(menor);
     }
 }
