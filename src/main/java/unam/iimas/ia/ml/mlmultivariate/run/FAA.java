@@ -32,14 +32,16 @@ public class FAA {
             //System.out.println(aaf.getBestEpsilonPhiValue());
             if(aaf.getBestEpsilonPhiValue().compareTo(menor)<=0){
                 menor = new BigDecimal(aaf.getBestEpsilonPhiValue().toString());
+                System.out.println(">"+aaf.getSeed());
             }
         } while (i<10);
                 // System.out.println("---------------------");
          Matrix.print(aaf.getBestCoeficients());
          System.out.println("seed: " +aaf.getSeed());
-         System.out.println(aaf.getM());
+         System.out.println(aaf.getModelo());
          System.out.println();
          System.out.println("---------------------");
+
 
         List<Vector> listaCompletaVectores = aaf.getEpsilonPhi();
         listaCompletaVectores.addAll(aaf.getEpsilonTetha());
