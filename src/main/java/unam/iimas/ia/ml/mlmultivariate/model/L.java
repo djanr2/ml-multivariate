@@ -31,7 +31,4 @@ public class L {
     public static int getIndexPower(int i){
         return L.powers[i];
     }
-
-
-
 }
