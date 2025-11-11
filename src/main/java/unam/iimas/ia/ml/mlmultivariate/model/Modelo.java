@@ -11,23 +11,12 @@ public class Modelo {
     private BigDecimal[] originalUpperLimitScale;
     private BigDecimal[] polynomialLowerLimitScale;
     private BigDecimal[] polynomialUpperLimitScale;
-    private final Random random;
-    private final long seed;
 
+    //TODO validar si es posible que las potencias de los monomios puedan tener potencias iguales o similares
+    // por ejemplo  Termino(new int[]{7, 0, 0, 3})
+    //              Termino(new int[]{3, 0, 0, 7})
     public Modelo(Termino[] terminos){
         this.terminos = terminos;
-        Random localRandom = new Random();
-        this.seed = localRandom.nextLong();
-        //this.seed = 217966992963623763L;
-        this.random = new Random(seed);
-
-    }
-
-    public Modelo(){
-        Random localRandom = new Random();
-        this.seed = localRandom.nextLong();
-        //this.seed = 217966992963623763L;
-        this.random = new Random(seed);
     }
 
     public static Modelo getRandomModelo(long seed, int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
@@ -43,6 +32,7 @@ public class Modelo {
             while(indexL>indexPotenciaMaximaL) {
                 indexL = random.nextInt(20);
             }
+            set_terminos.add(Termino.getRandomTermino(seed, L.getIndexPower(indexL),numeroVariables));
             set_terminos.add(Termino.getRandomTermino(seed, L.getIndexPower(indexL),numeroVariables));
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
@@ -116,61 +106,20 @@ public class Modelo {
         return originalUpperLimitScale;
     }
     public static Modelo getCustomModel(){
-        Termino[] terminos = {new Termino(new int[]{0, 0, 0, 0, 0})
-                            ,new Termino(new int[]{7, 0, 0, 0, 3})
-                            ,new Termino(new int[]{14, 0, 8, 1, 7})
-                            ,new Termino(new int[]{2, 0, 0, 4, 0})
-                            ,new Termino(new int[]{1, 7, 2, 3, 1})
-                            ,new Termino(new int[]{0, 0, 0, 0, 1})
-                            ,new Termino(new int[]{0, 0, 1, 0, 0})
-                            ,new Termino(new int[]{0, 0, 0, 1, 0})};
-
-        Termino[]  terminos2 = {new Termino(new int[]{1, 0, 0, 0, 1})
-                ,new Termino(new int[]{0, 1, 0, 1, 0})
-                ,new Termino(new int[]{0, 0, 1, 0, 0})};
-        Termino[]  terminos3 = {
-                new Termino(new int[]{0, 0}),
-                new Termino(new int[]{0, 1}),
-                new Termino(new int[]{0, 2}),
-                new Termino(new int[]{1, 0}),
-                new Termino(new int[]{1, 1}),
-                new Termino(new int[]{2, 0}),
-                new Termino(new int[]{2, 1}),
-                new Termino(new int[]{2, 2})};
-
-        Termino[] terminos4 = {new Termino(new int[]{0, 0, 0, 0})
-                ,new Termino(new int[]{2, 3,  2, 3})
-                ,new Termino(new int[]{5, 8, 1, 7})
-                ,new Termino(new int[]{2, 3, 4, 1})
-                ,new Termino(new int[]{1, 3, 2, 4})
-                ,new Termino(new int[]{1, 3, 1, 1})
-                ,new Termino(new int[]{2, 1, 1, 1})
-                ,new Termino(new int[]{0, 0, 1, 0})};
-        Termino[] terminos5 =
-
-                {new Termino(new int[]{0, 0})
-                ,new Termino(new int[]{0, 1})
-                ,new Termino(new int[]{0, 2})
-                ,new Termino(new int[]{1, 0})
-                ,new Termino(new int[]{1, 1})
-                ,new Termino(new int[]{1, 2})
-                ,new Termino(new int[]{2, 0})
-                ,new Termino(new int[]{2, 1})
-                ,new Termino(new int[]{2, 2})
-        };
-
-        return new Modelo(terminos5);
+        Termino[] terminos = {new Termino(new int[]{0, 0, 0, 0})
+                            ,new Termino(new int[]{7, 0, 0, 3})
+                            ,new Termino(new int[]{3, 0, 0, 7})
+                            ,new Termino(new int[]{2, 0, 4, 0})
+                            ,new Termino(new int[]{1, 7, 3, 1})
+                            ,new Termino(new int[]{0, 0, 0, 1})
+                            ,new Termino(new int[]{0, 0, 0, 0})
+                            ,new Termino(new int[]{0, 0, 1, 0})};
+        return new Modelo(terminos);
     }
 
     public void eraseLimits(){
         this.originalUpperLimitScale = null;
         this.originalLowerLimitScale = null;
-    }
-
-    public void setCoeficientes(BigDecimal[][] coeficientes){
-        for (int i = 0; i < this.terminos.length; i++) {
-                this.terminos[i].setCoeficiente(coeficientes[i][0]);
-        }
     }
 
     public void setSolutionCoeficientes(BigDecimal[][] coeficientes){
@@ -186,13 +135,5 @@ public class Modelo {
 
     public void setOriginalUpperLimitScale(BigDecimal[] originalUpperLimitScale) {
         this.originalUpperLimitScale = originalUpperLimitScale;
-    }
-
-    public Random getRandom() {
-        return random;
-    }
-
-    public long getSeed() {
-        return seed;
     }
 }
