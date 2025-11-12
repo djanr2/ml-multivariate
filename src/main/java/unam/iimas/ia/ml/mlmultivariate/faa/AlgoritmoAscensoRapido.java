@@ -46,7 +46,7 @@ public class AlgoritmoAscensoRapido {
         Matrix.print(aaf.getBestCoeficients());
     }
 
-    public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale ) {
+    public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale) {
         BigDecimal menor = new BigDecimal("1E1000");
         List<BigDecimal[]> d = vectores;
         m.setOriginalLowerLimitScale(lowerLimitToScale);
