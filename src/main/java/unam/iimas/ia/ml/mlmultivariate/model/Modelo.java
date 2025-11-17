@@ -18,15 +18,13 @@ public class Modelo {
 
     public static Modelo getRandomModelo(Random random, int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
         Set<Termino> set_terminos = new HashSet<>();
-        Termino t = Termino.getRandomTermino(random,0,numeroVariables);
-        set_terminos.add(t);
-        if(indexPotenciaMaximaL>20){
-            throw new IllegalArgumentException("La lista 'L' solo contiene 20 potencias, el valor solicitado no existe");
+        if(indexPotenciaMaximaL>21){
+            throw new IllegalArgumentException("La lista 'L' solo contiene 21 potencias, el valor solicitado no existe");
         }
         while (set_terminos.size() < numeroTerminos){
             int indexL = 21;// se coloca el nuemro 21 para establecer un limite maximo nunca lacanzado en la primera ireracion
             while(indexL>indexPotenciaMaximaL) {
-                indexL = random.nextInt(20);
+                indexL = random.nextInt(21);
             }
             Termino ter = Termino.getRandomTermino(random, L.getIndexPower(indexL),numeroVariables);
             set_terminos.add(ter);

@@ -25,10 +25,11 @@ public class FAA {
         List<Vector> bestEpsiolonTheta= null;
         Random ran = new Random();
         Properties prop = new Properties(ran.nextLong(), 11, 15,file );
-        aaf = new AlgoritmoAscensoRapido(prop);
+
         int i = 0;
         do {
             i++;
+            aaf = new AlgoritmoAscensoRapido(prop);
             aaf.run();
             //System.out.println(aaf.getBestCoeficients()[0][0]);
             //Sacar epsilon phi y ese es el de la tolerancioa
