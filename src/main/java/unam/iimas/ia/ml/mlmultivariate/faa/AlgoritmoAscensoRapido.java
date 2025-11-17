@@ -1,6 +1,5 @@
 package unam.iimas.ia.ml.mlmultivariate.faa;
 
-import unam.iimas.ia.ml.mlmultivariate.file.LoadFile;
 import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
 import unam.iimas.ia.ml.mlmultivariate.matrix.MatrixObject;
 import unam.iimas.ia.ml.mlmultivariate.model.*;
@@ -18,45 +17,26 @@ public class AlgoritmoAscensoRapido {
     private static final MathContext MC = new MathContext(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
     private final Random random;
     private final Map<IdSwap, Swap> swaps;
-    private final LoadFile file;
-    private final Long seed;
-    private Modelo m;
+    private final Properties prop;
+    private Modelo modelo;
     private BigDecimal[][] bestCoeficients;
     private List<Vector> epsilonPhi;
     private List<Vector> epsilonTetha;
     private BigDecimal bestEpsilonPhiValue = BigDecimal.ONE;
 
-    public AlgoritmoAscensoRapido(LoadFile file){
-        this.file = file;
+
+
+    public AlgoritmoAscensoRapido(Properties prop){
+        this.prop = prop;
         swaps = new HashMap<>();
-        Random localRandom = new Random();
-        seed = localRandom.nextLong();
-        random = new Random(seed);
-        m = Modelo.getRandomModelo(random, 9, 15, file.getNumeroVariables());
+        random = new Random(this.prop.getSeed());
+        modelo = Modelo.getRandomModelo(random, 9, 15, this.prop.getFile().getNumeroVariables());
     }
-
-    public AlgoritmoAscensoRapido(long seed_, LoadFile file){
-        this.file = file;
-        swaps = new HashMap<>();
-        seed = seed_;
-        random = new Random(seed);
-        m = Modelo.getRandomModelo(random, 9, 15, file.getNumeroVariables());
-    }
-
-    public static void main(String[] args) {
-        //Aqui se carga el archivo.
-        LoadFile file = new LoadFile();
-        AlgoritmoAscensoRapido aaf = new AlgoritmoAscensoRapido(file);
-        aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
-        System.out.println(aaf.getModelo());
-        Matrix.print(aaf.getBestCoeficients());
-    }
-
-    public void run(List<BigDecimal[]> vectores, BigDecimal[] lowerLimitToScale,BigDecimal[] upperLimitToScale) {
+    public void run() {
         BigDecimal menor = new BigDecimal("1E1000");
-        List<BigDecimal[]> d = vectores;
-        m.setOriginalLowerLimitScale(lowerLimitToScale);
-        m.setOriginalUpperLimitScale(upperLimitToScale);
+        List<BigDecimal[]> d = prop.getFile().getVectores();
+        modelo.setOriginalLowerLimitScale(prop.getFile().getLowerLimitScale());
+        modelo.setOriginalUpperLimitScale(prop.getFile().getUpperLimitScale());
         List<BigDecimal[]> e = scaleVectorsZeroToOne(d);
         List<BigDecimal[]> p = mapToPolynomial(e);
         List<BigDecimal[]> s = stabilizeVectors(p);
@@ -69,7 +49,7 @@ public class AlgoritmoAscensoRapido {
         BigDecimal[][] c;
         while (true){
             c = getCoeficientsAndEpsilonTetha(b, solution);
-            m.setSolutionCoeficientes(c);
+            modelo.setSolutionCoeficientes(c);
             Vector epsilonPhiVector = getEpsilonPhiVector(epsilonPhi);
             BigDecimal[][] lamdas = getLamdas(epsilonPhiVector.getMiMaxSignVector(), b);
             BigDecimal[][] betas = getBetas(lamdas, Matrix.getMatrixRow(b, 0),  epsilonPhiVector.getSign());
@@ -98,7 +78,7 @@ public class AlgoritmoAscensoRapido {
         }
         setEpsilonPhi(epsilonPhi);
         setEpsilonTetha(epsilonTetha);
-        m.setSolutionCoeficientes(getBestCoeficients());
+        modelo.setSolutionCoeficientes(getBestCoeficients());
     }
 
     private BigDecimal[][] getInverseFromLamda(BigDecimal[][] epsilonPhi, BigDecimal[][] b, int indexBeta){
@@ -219,8 +199,8 @@ public class AlgoritmoAscensoRapido {
             BigDecimal[] vector = new BigDecimal[vectorOriginal.length];
             for (int i = 0; i<vector.length;i++) {
                 BigDecimal x = new BigDecimal(vectorOriginal[i].toString());
-                BigDecimal a = m.getOriginalLowerLimitScale()[i];
-                BigDecimal b = m.getOriginalUpperLimitScale()[i];
+                BigDecimal a = modelo.getOriginalLowerLimitScale()[i];
+                BigDecimal b = modelo.getOriginalUpperLimitScale()[i];
                 if(a.compareTo(x)==0){
                     vector[i] = BigDecimal.ZERO;
                 } else {
@@ -244,7 +224,7 @@ public class AlgoritmoAscensoRapido {
         List<BigDecimal[]> vectorsToPolynomial = new ArrayList<>();
         for (BigDecimal[] vector:
         vectors) {
-            vectorsToPolynomial.add(m.getPolynomialVector(vector));
+            vectorsToPolynomial.add(modelo.getPolynomialVector(vector));
         }
         return vectorsToPolynomial;
     }
@@ -258,7 +238,7 @@ public class AlgoritmoAscensoRapido {
     public List<Vector> mapToVectors(List<BigDecimal[]> vectores){
         List<Vector> vectores_ = new ArrayList<>();
         for (int i = 0; i < vectores.size(); i++) {
-            vectores_.add(new Vector(i, m, vectores.get(i)));
+            vectores_.add(new Vector(i, modelo, vectores.get(i)));
         }
         return vectores_;
     }
@@ -299,7 +279,7 @@ public class AlgoritmoAscensoRapido {
 
     public List<BigDecimal[]> stabilizeVectors(List<BigDecimal[]> vectores){
         List<BigDecimal[]> vectores_ = new ArrayList<>();
-        m.eraseLimits();
+        modelo.eraseLimits();
         for (BigDecimal[] v:
                 vectores) {
             BigDecimal[] vector = new BigDecimal[v.length];
@@ -311,7 +291,7 @@ public class AlgoritmoAscensoRapido {
                 }
             }
             vector[v.length-1] = v[v.length-1];
-            m.calculateNewLimits(vector);
+            modelo.calculateNewLimits(vector);
             vectores_.add(vector);
         }
         return vectores_;
@@ -338,7 +318,7 @@ public class AlgoritmoAscensoRapido {
     }
 
     public Modelo getModelo() {
-        return m;
+        return modelo;
     }
 
     public void saveBestCoeficients(BigDecimal[][] coeficients){
@@ -370,6 +350,6 @@ public class AlgoritmoAscensoRapido {
     }
 
     public Long getSeed() {
-        return seed;
+        return prop.getSeed();
     }
 }

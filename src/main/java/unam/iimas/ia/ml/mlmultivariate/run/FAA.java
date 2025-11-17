@@ -2,21 +2,17 @@ package unam.iimas.ia.ml.mlmultivariate.run;
 
 
 import unam.iimas.ia.ml.mlmultivariate.faa.AlgoritmoAscensoRapido;
+import unam.iimas.ia.ml.mlmultivariate.faa.Properties;
 import unam.iimas.ia.ml.mlmultivariate.file.LoadFile;
 import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
 import unam.iimas.ia.ml.mlmultivariate.model.Modelo;
 import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class FAA {
-
     private static final double TOLERANCE = 0.3;
-
 
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
@@ -27,13 +23,13 @@ public class FAA {
         Modelo m = null;
         List<Vector> bestEpsiolonPhi = null;
         List<Vector> bestEpsiolonTheta= null;
-
-
+        Random ran = new Random();
+        Properties prop = new Properties(ran.nextLong(), 11, 15,file );
+        aaf = new AlgoritmoAscensoRapido(prop);
         int i = 0;
         do {
             i++;
-            aaf = new AlgoritmoAscensoRapido(file);
-            aaf.run(file.getVectores(), file.getLowerLimitScale(), file.getUpperLimitScale());
+            aaf.run();
             //System.out.println(aaf.getBestCoeficients()[0][0]);
             //Sacar epsilon phi y ese es el de la tolerancioa
             //System.out.println(aaf.getBestEpsilonPhiValue());
@@ -44,7 +40,6 @@ public class FAA {
                 m = aaf.getModelo();
                 bestEpsiolonPhi = aaf.getEpsilonPhi();
                 bestEpsiolonTheta = aaf.getEpsilonTetha();
-
             }
         } while (i<100);
          System.out.println("---------------------");
@@ -54,8 +49,6 @@ public class FAA {
          System.out.println(menor);
          System.out.println();
          System.out.println("---------------------");
-
-
 
         List<Vector> listaCompletaVectores = bestEpsiolonPhi;
         listaCompletaVectores.addAll(bestEpsiolonTheta);

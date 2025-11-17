@@ -29,13 +29,7 @@ public class Modelo {
                 indexL = random.nextInt(20);
             }
             Termino ter = Termino.getRandomTermino(random, L.getIndexPower(indexL),numeroVariables);
-            System.out.println(ter);
             set_terminos.add(ter);
-            try {
-                Thread.sleep(1000);
-            }catch (Exception e){
-
-            }
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
         Collections.sort(lista_terminos);
