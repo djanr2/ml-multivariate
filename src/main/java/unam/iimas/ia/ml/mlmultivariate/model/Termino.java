@@ -30,17 +30,10 @@ public class Termino implements Comparable<Termino>{
         this.potencia = Arrays.stream(potencicas).sum();
     }
 
-
-    public static int getRandomTerminosNumber(){
-        Random random = new Random();
-        return random.nextInt(MINIMO_TERMINO,MAXIMO_TERMINO + 1);// Número + 1 inclusive
-    }
-
-    public static Termino getRandomTermino(long seed, int potenciaTermino, int numeroDeVariables){
+    public static Termino getRandomTermino(Random rand, int potenciaTermino, int numeroDeVariables){
         Termino termino = new Termino(new BigDecimal(1), potenciaTermino,numeroDeVariables);
         int potenciaTerminoAux = potenciaTermino;
         int potencia=0;
-        Random rand = new Random(seed);
         List<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < numeroDeVariables; i++) {
             numbers.add(i);

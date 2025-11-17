@@ -12,18 +12,14 @@ public class Modelo {
     private BigDecimal[] polynomialLowerLimitScale;
     private BigDecimal[] polynomialUpperLimitScale;
 
-    //TODO validar si es posible que las potencias de los monomios puedan tener potencias iguales o similares
-    // por ejemplo  Termino(new int[]{7, 0, 0, 3})
-    //              Termino(new int[]{3, 0, 0, 7})
     public Modelo(Termino[] terminos){
         this.terminos = terminos;
     }
 
-    public static Modelo getRandomModelo(long seed, int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
+    public static Modelo getRandomModelo(Random random, int numeroTerminos, int indexPotenciaMaximaL, int numeroVariables){
         Set<Termino> set_terminos = new HashSet<>();
-        Termino t = Termino.getRandomTermino(seed,0,numeroVariables);
+        Termino t = Termino.getRandomTermino(random,0,numeroVariables);
         set_terminos.add(t);
-        Random random = new Random(seed);
         if(indexPotenciaMaximaL>20){
             throw new IllegalArgumentException("La lista 'L' solo contiene 20 potencias, el valor solicitado no existe");
         }
@@ -32,8 +28,14 @@ public class Modelo {
             while(indexL>indexPotenciaMaximaL) {
                 indexL = random.nextInt(20);
             }
-            set_terminos.add(Termino.getRandomTermino(seed, L.getIndexPower(indexL),numeroVariables));
-            set_terminos.add(Termino.getRandomTermino(seed, L.getIndexPower(indexL),numeroVariables));
+            Termino ter = Termino.getRandomTermino(random, L.getIndexPower(indexL),numeroVariables);
+            System.out.println(ter);
+            set_terminos.add(ter);
+            try {
+                Thread.sleep(1000);
+            }catch (Exception e){
+
+            }
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
         Collections.sort(lista_terminos);
@@ -108,12 +110,7 @@ public class Modelo {
     public static Modelo getCustomModel(){
         Termino[] terminos = {new Termino(new int[]{0, 0, 0, 0})
                             ,new Termino(new int[]{7, 0, 0, 3})
-                            ,new Termino(new int[]{3, 0, 0, 7})
-                            ,new Termino(new int[]{2, 0, 4, 0})
-                            ,new Termino(new int[]{1, 7, 3, 1})
-                            ,new Termino(new int[]{0, 0, 0, 1})
-                            ,new Termino(new int[]{0, 0, 0, 0})
-                            ,new Termino(new int[]{0, 0, 1, 0})};
+                            ,new Termino(new int[]{3, 0, 0, 7})};
         return new Modelo(terminos);
     }
 

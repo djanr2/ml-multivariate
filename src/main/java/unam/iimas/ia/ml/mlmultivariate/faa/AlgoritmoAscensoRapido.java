@@ -31,10 +31,16 @@ public class AlgoritmoAscensoRapido {
         swaps = new HashMap<>();
         Random localRandom = new Random();
         seed = localRandom.nextLong();
-        //seed = -8769864601379682302L;
-        //System.out.println("Seed: "+ seed);
         random = new Random(seed);
-        m = Modelo.getRandomModelo(seed, 9, 15, file.getNumeroVariables());
+        m = Modelo.getRandomModelo(random, 9, 15, file.getNumeroVariables());
+    }
+
+    public AlgoritmoAscensoRapido(long seed_, LoadFile file){
+        this.file = file;
+        swaps = new HashMap<>();
+        seed = seed_;
+        random = new Random(seed);
+        m = Modelo.getRandomModelo(random, 9, 15, file.getNumeroVariables());
     }
 
     public static void main(String[] args) {

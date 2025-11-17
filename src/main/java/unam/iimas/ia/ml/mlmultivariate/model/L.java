@@ -9,13 +9,6 @@ public class L {
                                         11,15,21,25,27,
                                         33,35,45,49,55,
                                         63,77,81,99,121};
-
-    public static int getRandomLPower(){
-        Random random = new Random();
-        int randVal = random.nextInt(POTENCIA_MINIMA,POTENCIA_MAXIMA);
-        return getMinPower(randVal);
-    }
-
     public static int getMinPower(int power){
         int l = 0;
         for (int li:
