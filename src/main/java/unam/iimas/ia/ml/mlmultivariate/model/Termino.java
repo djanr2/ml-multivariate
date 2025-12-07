@@ -50,10 +50,6 @@ public class Termino implements Comparable<Termino>{
         return termino;
     }
 
-    public static Termino getZeroTerm(int numeroVariables){
-        return new Termino(new BigDecimal(1), 0,numeroVariables);
-
-    }
     @Override
     public String toString(){
         return coeficiente+"("+Arrays.toString(this.potencias)+")";

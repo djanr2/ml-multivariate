@@ -12,8 +12,6 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class FAA {
-    private static final double TOLERANCE = 0.3;
-
     public static void main(String[] args) {
         LoadFile file = new LoadFile();
         AlgoritmoAscensoRapido aaf;
@@ -23,12 +21,15 @@ public class FAA {
         Modelo m = null;
         List<Vector> bestEpsiolonPhi = null;
         List<Vector> bestEpsiolonTheta= null;
+        /// se el epasa un seed al random para reproducie el mismo experimento
+
         Random ran = new Random();
-        Properties prop = new Properties(ran.nextLong(), 11, 15,file );
+        Properties prop;
 
         int i = 0;
         do {
             i++;
+            prop = new Properties(ran.nextLong(), 11, 15,file );
             aaf = new AlgoritmoAscensoRapido(prop);
             aaf.run();
             //System.out.println(aaf.getBestCoeficients()[0][0]);
@@ -42,7 +43,7 @@ public class FAA {
                 bestEpsiolonPhi = aaf.getEpsilonPhi();
                 bestEpsiolonTheta = aaf.getEpsilonTetha();
             }
-        } while (i<100);
+        } while (i<1);
          System.out.println("---------------------");
          Matrix.print(bestCoeficients);
          System.out.println("seed: " +bestSeed);

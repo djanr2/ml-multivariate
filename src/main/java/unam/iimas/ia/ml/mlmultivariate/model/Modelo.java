@@ -30,7 +30,7 @@ public class Modelo {
             set_terminos.add(ter);
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
-        Collections.sort(lista_terminos);
+        //Collections.sort(lista_terminos);
 
         return new Modelo(lista_terminos.toArray(new Termino[lista_terminos.size()]));
     }
