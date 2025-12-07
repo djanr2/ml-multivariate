@@ -11,7 +11,7 @@ import java.math.MathContext;
 import java.util.*;
 import java.util.List;
 
-public class AlgoritmoAscensoRapido {
+public class AlgoritmoAscensoRapido implements Comparable<AlgoritmoAscensoRapido>{
 
     private static final int RHO = Precision.RHO;
     private static final MathContext MC = new MathContext(Precision.MIN_PRECISION, Precision.ROUNDING_MODE);
@@ -23,8 +23,6 @@ public class AlgoritmoAscensoRapido {
     private List<Vector> epsilonPhi;
     private List<Vector> epsilonTetha;
     private BigDecimal bestEpsilonPhiValue = BigDecimal.ONE;
-
-
 
     public AlgoritmoAscensoRapido(Properties prop){
         this.prop = prop;
@@ -153,6 +151,7 @@ public class AlgoritmoAscensoRapido {
     }
 
     public Vector getEpsilonPhiVector(List<Vector> epsilonPhi){
+        //
         PriorityQueue<Vector> epsilonPhi_ = new PriorityQueue<>();
         for (Vector v:
                 epsilonPhi ) {
@@ -351,5 +350,10 @@ public class AlgoritmoAscensoRapido {
 
     public Long getSeed() {
         return prop.getSeed();
+    }
+
+    @Override
+    public int compareTo(AlgoritmoAscensoRapido o) {
+        return this.getBestEpsilonPhiValue().compareTo(o.getBestEpsilonPhiValue());
     }
 }

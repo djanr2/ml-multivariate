@@ -3,9 +3,10 @@ package unam.iimas.ia.ml.mlmultivariate.model;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class Modelo {
+public class Modelo{
 
     private Long id;
+    //TODO TRABAJAR CON SET EN LUGAR DE LIST
     private Termino[] terminos;
     private BigDecimal[] originalLowerLimitScale;
     private BigDecimal[] originalUpperLimitScale;
@@ -22,11 +23,11 @@ public class Modelo {
             throw new IllegalArgumentException("La lista 'L' solo contiene 21 potencias, el valor solicitado no existe");
         }
         while (set_terminos.size() < numeroTerminos){
-            int indexL = 21;// se coloca el nuemro 21 para establecer un limite maximo nunca lacanzado en la primera ireracion
+            int indexL = 22;// se coloca el nuemro 22 para establecer un limite maximo nunca lacanzado en la primera ireracion
             while(indexL>indexPotenciaMaximaL) {
                 indexL = random.nextInt(21);
             }
-            Termino ter = Termino.getRandomTermino(random, L.getIndexPower(indexL),numeroVariables);
+            Termino ter = Termino.getRandomTermino(random, L.getPowerL(indexL),numeroVariables);
             set_terminos.add(ter);
         }
         List<Termino> lista_terminos = new ArrayList<>(set_terminos);
@@ -34,8 +35,6 @@ public class Modelo {
 
         return new Modelo(lista_terminos.toArray(new Termino[lista_terminos.size()]));
     }
-
-
 
     @Override
     public String toString(){
@@ -124,5 +123,18 @@ public class Modelo {
 
     public void setOriginalUpperLimitScale(BigDecimal[] originalUpperLimitScale) {
         this.originalUpperLimitScale = originalUpperLimitScale;
+    }
+
+    public Termino cloneTermino(int i){
+        Termino clone = new Termino(terminos[i].getPotencias());
+        return clone;
+    }
+
+    public Termino getRandomTermino(Random random, int potenciaMaxima){
+        int indexL = 22;// se coloca el nuemro 22 para establecer un limite maximo nunca lacanzado en la primera ireracion
+        while(indexL>potenciaMaxima) {
+            indexL = random.nextInt(21);
+        }
+        return Termino.getRandomTermino(random, L.getPowerL(indexL),terminos.length);
     }
 }

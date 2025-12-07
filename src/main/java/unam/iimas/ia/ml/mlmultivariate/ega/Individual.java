@@ -30,5 +30,7 @@ public class Individual {
     //  4. Establecer servicio API rest
     // TODO
     //  5. Diseñar el front-end
+    // TODO
+    //  6. Revisar el comparable de Vector
 
 }
