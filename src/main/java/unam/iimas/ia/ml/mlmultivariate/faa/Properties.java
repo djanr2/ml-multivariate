@@ -29,4 +29,12 @@ public class Properties {
     public LoadFile getFile() {
         return file;
     }
+
+    public int getNumero_terminos() {
+        return numero_terminos;
+    }
+
+    public int getMaxima_potencia_l() {
+        return maxima_potencia_l;
+    }
 }

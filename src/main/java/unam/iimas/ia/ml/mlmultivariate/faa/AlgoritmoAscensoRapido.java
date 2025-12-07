@@ -30,7 +30,7 @@ public class AlgoritmoAscensoRapido {
         this.prop = prop;
         swaps = new HashMap<>();
         random = new Random(this.prop.getSeed());
-        modelo = Modelo.getRandomModelo(random, 9, 15, this.prop.getFile().getNumeroVariables());
+        modelo = Modelo.getRandomModelo(random,prop.getNumero_terminos(), prop.getMaxima_potencia_l(), prop.getFile().getNumeroVariables());
     }
     public void run() {
         BigDecimal menor = new BigDecimal("1E1000");
