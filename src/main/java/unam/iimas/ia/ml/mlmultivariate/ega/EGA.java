@@ -25,12 +25,13 @@ public class EGA {
     public void run(){
         individuals = getNewGeneration();
         for (int epoch_ = 0; epoch_ < epoch; epoch_++) {
-            System.out.println(epoch_);
+            //System.out.println("epoch: "+epoch_);
             interact();
         }
-        for (int i = 0; i < individuals.size(); i++) {
-            System.out.println(individuals.get(i).getBestEpsilonPhiValue()+ ": "+individuals.get(i).getModelo());
-        }
+        //for (int i = 0; i < individuals.size(); i++) {
+            //System.out.println(individuals.get(i).getBestEpsilonPhiValue()+ ": "+individuals.get(i).getModelo());
+        //}
+
     }
 
     private List<AlgoritmoAscensoRapido> getNewGeneration(){
@@ -38,7 +39,7 @@ public class EGA {
         LoadFile file = new LoadFile();
         AlgoritmoAscensoRapido aaf;
         while (individuals.size()<number_individuals){
-            prop = new Properties(random.nextLong(), 7, 10,file);
+            prop = new Properties(random.nextLong(), 6, 10,file);
             aaf = new AlgoritmoAscensoRapido(prop);
             aaf.run();
             individuals.add(aaf);
@@ -61,7 +62,7 @@ public class EGA {
                 if(mutation_probability-mutation > 0){
                     AlgoritmoAscensoRapido xm = individuals.get(individuals.size()-1);
                     AlgoritmoAscensoRapido ym = individuals.get(individuals.size()-2);
-                    //mutate(xm, ym);
+                    mutate(xm, ym);
                 }
             }
         }
@@ -92,6 +93,7 @@ public class EGA {
         individuals.add(b);
     }
 
+    //TODO VALIDAR QUE NO ESTE COLOCANDO UN TERMINO REPETIDO
     private void mutate(AlgoritmoAscensoRapido x, AlgoritmoAscensoRapido y){
         int n = prop.getNumero_terminos();
         int randx = random.nextInt(n);
@@ -102,12 +104,12 @@ public class EGA {
             a.getModelo().getTerminos()[i] = x.getModelo().cloneTermino(i);
             b.getModelo().getTerminos()[i] = y.getModelo().cloneTermino(i);
             if (i == randx){
-                a.getModelo().getTerminos()[i] = a.getModelo().getRandomTermino(random,
-                        prop.getMaxima_potencia_l());
+                a.getModelo().getTerminos()[i] = x.getModelo().getRandomTermino(random,
+                        prop.getMaxima_potencia_l(), prop.getFile().getNumeroVariables());
             }
             if (i == randy){
-                b.getModelo().getTerminos()[i] = b.getModelo().getRandomTermino(random,
-                        prop.getMaxima_potencia_l());
+                b.getModelo().getTerminos()[i] = y.getModelo().getRandomTermino(random,
+                        prop.getMaxima_potencia_l(), prop.getFile().getNumeroVariables());
             }
         }
         a.run();

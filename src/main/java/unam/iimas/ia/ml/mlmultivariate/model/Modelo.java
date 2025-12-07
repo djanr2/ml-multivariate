@@ -130,11 +130,11 @@ public class Modelo{
         return clone;
     }
 
-    public Termino getRandomTermino(Random random, int potenciaMaxima){
+    public Termino getRandomTermino(Random random, int potenciaMaxima, int numVariables){
         int indexL = 22;// se coloca el nuemro 22 para establecer un limite maximo nunca lacanzado en la primera ireracion
         while(indexL>potenciaMaxima) {
             indexL = random.nextInt(21);
         }
-        return Termino.getRandomTermino(random, L.getPowerL(indexL),terminos.length);
+        return Termino.getRandomTermino(random, L.getPowerL(indexL),numVariables);
     }
 }
