@@ -3,7 +3,10 @@ package unam.iimas.ia.ml.mlmultivariate.ega;
 import unam.iimas.ia.ml.mlmultivariate.faa.AlgoritmoAscensoRapido;
 import unam.iimas.ia.ml.mlmultivariate.faa.Properties;
 import unam.iimas.ia.ml.mlmultivariate.file.LoadFile;
+import unam.iimas.ia.ml.mlmultivariate.matrix.Matrix;
+import unam.iimas.ia.ml.mlmultivariate.model.Vector;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 // TODO
@@ -39,7 +42,7 @@ import java.util.*;
 //  6. Revisar el comparable de Vector
 
 public class EGA {
-    private final int epoch = 100;
+    private final int epoch = 50;
     private final double mutation_probability = 0.5;
     private final double cross_probability = 1.0;
     private final int number_individuals= 40; // simpre debe de ser par
@@ -57,12 +60,25 @@ public class EGA {
     public void run(){
         individuals = getNewGeneration();
         for (int epoch_ = 0; epoch_ < epoch; epoch_++) {
-            //System.out.println("epoch: "+epoch_);
+            System.out.println("epoch: "+epoch_);
             interact();
         }
-        //for (int i = 0; i < individuals.size(); i++) {
-            //System.out.println(individuals.get(i).getBestEpsilonPhiValue()+ ": "+individuals.get(i).getModelo());
-        //}
+        for (int i = 0; i < individuals.size(); i++) {
+            System.out.println(individuals.get(i).getBestEpsilonPhiValue()+ ": "+individuals.get(i).getModelo());
+        }
+        BigDecimal[][] listaCompletaVectores = individuals.get(0).getBestCoeficients();
+        Matrix.print(listaCompletaVectores);
+
+        List<Vector> listaCompleta = individuals.get(0).getEpsilonPhi();
+        listaCompleta.addAll(individuals.get(0).getEpsilonTetha());
+        listaCompleta.sort(Comparator.comparingInt(unam.iimas.ia.ml.mlmultivariate.model.Vector::getIndex));
+
+        for (Vector v:
+                listaCompleta) {
+            System.out.println(v.getStringToGraph());
+        }
+
+
     }
 
     private List<AlgoritmoAscensoRapido> getNewGeneration(){
@@ -70,7 +86,7 @@ public class EGA {
         LoadFile file = new LoadFile();
         AlgoritmoAscensoRapido aaf;
         while (individuals.size()<number_individuals){
-            prop = new Properties(random.nextLong(), 6, 10,file);
+            prop = new Properties(random.nextLong(), 9, 10,file);
             aaf = new AlgoritmoAscensoRapido(prop);
             aaf.run();
             individuals.add(aaf);
